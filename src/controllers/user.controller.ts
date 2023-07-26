@@ -1,5 +1,5 @@
 import pool from "../utils/database.js";
-import { getStudentsQuery, getStudentByIdQuery, checkEmailExists, addStudentQuery } from "../utils/queries.js";
+import { getStudentsQuery, getStudentByIdQuery, checkEmailExists, addStudentQuery, deleteStudentQuery, updateStudentQuery} from "../utils/queries.js";
 
 const getStudent = (req, res) =>{
     pool.query(getStudentsQuery, (err, results) => {
@@ -9,8 +9,7 @@ const getStudent = (req, res) =>{
 }
 
 const getStudentById = (req, res) =>{
-    const id = req.params.id;
-    console.log(id);
+    const id = req.params.id;;
     
     pool.query(getStudentByIdQuery, [id], (err, results) => {
         if(err){
@@ -25,7 +24,7 @@ const getStudentById = (req, res) =>{
 }
 
 const addStudent = (req, res) => {
-    const {person_uid, first_name, last_name, email, gender, date_of_birth, car_uid} = req.body;
+    const { first_name, last_name, email, gender, date_of_birth, car_uid} = req.body;
 
     //Check if e mail exits
     pool.query(checkEmailExists, [email], (err, results) => {
@@ -54,12 +53,66 @@ const addStudent = (req, res) => {
         }
 
     });
-};
+}
+
+
+const deleteStudent = (req, res) => {
+    const id = req.params.id;
+
+    pool.query(deleteStudentQuery, [id], (err, results) => {
+        if(err){
+            console.log("Error happened while deleting");
+            res.end();
+        }
+        else{
+            console.log("Student Deleted Successfully");
+            res.end();
+        }
+    });
+
+}
+
+const updateStudent = (req, res) => {
+    const id = req.params.id;
+    const { first_name, last_name, email, gender, date_of_birth, car_uid} = req.body;
+
+    pool.query(getStudentByIdQuery, [id], (err, results) => {
+        if(err) {
+            console.log("Error happened while finding student by id");
+            res.end();
+        }
+        else{
+            const noStudentFound = !results.rows.length;
+            if(noStudentFound) {
+                console.log("Student Does Not Exist In the Database");
+                res.send("Student Does Not Exist In the Database");
+            }
+            else{
+                pool.query(updateStudentQuery, [id, first_name, last_name, email, gender, date_of_birth, car_uid], (err, results) => {
+                    if(err) {
+                        console.log("Error happened while updating student by id");
+                        res.end();
+                    }
+                    else{
+                        res.status(200).send("Student Updated Successfully");
+                    }
+                })
+            }
+        }
+
+
+    });
+}
+
+
+
 
 
 export {
     getStudent,
     getStudentById,
-    addStudent
+    addStudent,
+    deleteStudent,
+    updateStudent,
 }
 
