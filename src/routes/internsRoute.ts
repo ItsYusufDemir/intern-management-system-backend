@@ -1,29 +1,13 @@
 import express from "express";
 const router = express.Router();
 import fs from "fs";
-import {Intern} from "../models/Intern";
+import {Intern} from "../models/Intern.js";
+import {getStudent, getStudentById, addStudent} from "../controllers/user.controller.js";
 
-router.get("/", (req, res) =>{
-    fs.readFile(__dirname + "/" + "/../../data/interns.json", "utf8", (err, jsonString) =>{
-      if(err){
-        console.log("json file couldn't be read");
-        res.end();
-      }
-      else{
-        let interns:Intern[] = JSON.parse(jsonString) 
-        console.log(interns);
-            
-        res.end(jsonString);
-      }
-    })
-  })
-  router.get("/:id", (req, res) =>{
-    const id = req.params.id;
-  
-    console.log("Get intern with id: ", id);
-  
-    res.end();
-  })
+
+  router.get("/", getStudent);
+
+  router.get("/:id", getStudentById);
   
   router.delete("/:id", (req, res) =>{
     const id = req.params.id;
@@ -33,14 +17,7 @@ router.get("/", (req, res) =>{
     res.end();
   })
   
-  router.post("/", (req, res) => {
-    
-    const newIntern: Intern = req.body;
-  
-    console.log(newIntern);
-  
-    res.end();
-  });
+  router.post("/", addStudent);
 
 
 export default router;

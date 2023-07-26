@@ -4,15 +4,17 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
 import fs from "fs";
-import {Intern} from "./models/Intern";
-import internsRouter from "./routes/internsRoute";
+import {Intern} from "./models/Intern.js";
+import internsRouter from "./routes/internsRoute.js";
 
 
 const app = express();
 
 app.use(cors({
   credentials: true
-}))
+}));
+
+app.use(express.json());
 
 app.use(morgan("dev"));
 
@@ -28,7 +30,7 @@ server.listen(5000, ()=>{
 })
 
 //Interns Router
-app.use("/interns", internsRouter);
+app.use("/api/interns", internsRouter);
 
 
 //Teams router
