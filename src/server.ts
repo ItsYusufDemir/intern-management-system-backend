@@ -5,7 +5,8 @@ import cors from "cors";
 import morgan from "morgan";
 import fs from "fs";
 import {Intern} from "./models/Intern.js";
-import internsRouter from "./routes/internsRoute.js";
+import internsRoute from "./routes/InternsRouter.js";
+import teamsRoute from "./routes/TeamsRouter.js";
 
 
 const app = express();
@@ -25,16 +26,14 @@ const server = http.createServer(app);
 
 server.listen(5000, ()=>{
   console.log("Server running on port 5000");
-
-  //conncec to db here
 })
 
-//Interns Router
-app.use("/api/interns", internsRouter);
 
+//Interns Router
+app.use("/api/interns", internsRoute);
 
 //Teams router
-
+app.use("/api/teams", teamsRoute);
 
 //Register: post /user
 
