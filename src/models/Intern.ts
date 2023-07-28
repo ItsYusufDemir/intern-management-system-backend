@@ -16,6 +16,7 @@ export interface Intern {
   cv_url: string | undefined;
   photo_url: string |undefined;
   overall_success: number | undefined;
+  assignment_grades: number[] | undefined;
 }
 
 
