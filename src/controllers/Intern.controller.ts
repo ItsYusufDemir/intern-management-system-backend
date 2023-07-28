@@ -17,14 +17,20 @@ const getInternById = (req, res) =>{
             res.end();
         }
         else{
-            res.status(200).json(results.rows);
+            if(results.rows.length == 0){
+                console.log("Intern does not exist with id: " + id);
+                res.send("Intern does not exist with id: " + id);
+            }
+            else{
+                res.status(200).json(results.rows);
+            }
         }
     })
     
 }
 
 const addIntern = (req, res) => {
-    const {first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success} = req.body;
+    const {first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success, assignment_grades} = req.body;
 
     //Check if e mail exits
     pool.query(Queries.checkEmailExists, [email], (err, results) => {
@@ -39,7 +45,7 @@ const addIntern = (req, res) => {
             }
             else{
                 //Add the student to the database
-                pool.query(Queries.addInternQuery, [first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success], (err, results) =>{
+                pool.query(Queries.addInternQuery, [first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success, assignment_grades], (err, results) =>{
                     if(err){
                         console.log("Error happened while adding intern");
                         console.log(err);
@@ -75,7 +81,7 @@ const deleteIntern = (req, res) => {
 
 const updateIntern = (req, res) => {
     const id = req.params.id;
-    const { first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success} = req.body;
+    const { first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success, assignment_grades} = req.body;
 
     pool.query(Queries.getInternByIdQuery, [id], (err, results) => {
         if(err) {
@@ -89,7 +95,7 @@ const updateIntern = (req, res) => {
                 res.send("Intern Does Not Exist In the Database");
             }
             else{
-                pool.query(Queries.updateTeamQuery, [id, first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success], (err, results) => {
+                pool.query(Queries.updateInternQuery, [id, first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success, assignment_grades], (err, results) => {
                     if(err) {
                         console.log("Error happened while updating intern by id");
                         console.log(err);
