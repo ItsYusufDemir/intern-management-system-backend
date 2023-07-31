@@ -7,9 +7,17 @@ import fs from "fs";
 import {Intern} from "./models/Intern.js";
 import internsRoute from "./routes/InternsRouter.js";
 import teamsRoute from "./routes/TeamsRouter.js";
-
+import uploadRouter from "./routes/UploadRouter.js";
+import fileUpload from "express-fileupload";
+import chalk from 'chalk';
 
 const app = express();
+
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.raw({ limit: '50mb', type: 'application/octet-stream' }));
+app.use(fileUpload());
 
 app.use(cors({
   credentials: true
@@ -17,7 +25,19 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use(morgan("dev"));
+//Print coming requests to the console
+app.use(morgan(function (tokens, req, res){
+  return [
+    "\n",
+    chalk.hex('#1946BD').bold(tokens.method(req, res)),
+    chalk.hex("#3A5FE9")(tokens.url(req, res)),
+    chalk.hex("#2ed573").bold(tokens.status(req, res)),
+    chalk.white(tokens['response-time'](req, res) + ' ms'),
+    chalk.hex('#f78fb3').bold(' ' + tokens.date(req, res)),
+  ].join(" ");
+}));
+
+
 
 
 app.use(bodyParser.json()); //converts body to json
@@ -41,113 +61,12 @@ app.use("/api/teams", teamsRoute);
 
 //logout: delete /session
 
+//Uploads
+app.use("/uploads", uploadRouter);
+
 
 
 //Invalid Router
 app.use((req, res) => {
   res.json({ message: "Opps! Invalid" });
 })
-
-
-
-
-
-
-
-
-
-/*
-import express from "express";
-import http from "http";
-import bodyParser from "body-parser";
-import cors from "cors";
-import morgan from "morgan";
-import fs from "fs";
-import {Intern} from "./models/Intern";
-
-
-const app = express();
-
-app.use(cors({
-  credentials: true
-}))
-
-app.use(morgan("dev"));
-
-
-app.use(bodyParser.json()); //converts body to json
-
-const server = http.createServer(app);
-
-server.listen(5000, ()=>{
-  console.log("Server running on port 5000");
-})
-
-app.get("/interns", (req, res) =>{
-  fs.readFile(__dirname + "/" + "/../data/interns.json", "utf8", (err, jsonString) =>{
-    if(err){
-      console.log("json file couldn't be read");
-      res.end();
-    }
-    else{
-      let interns:Intern[] = JSON.parse(jsonString) 
-      console.log(interns);
-          
-      res.end(jsonString);
-    }
-  })
-})
-
-
-app.post("/interns", (req, res) => {
-  fs.readFile(__dirname + "/" + "/../data/interns.json", "utf8", (err, jsonString) =>{
-    if(err) {
-      console.log("json file couldn't be read");
-      res.end();
-    }
-    else{
-      let interns:Intern[] = JSON.parse(jsonString) 
-      
-      let newIntern: Intern = req.body;
-      interns.push(newIntern);
-
-
-      fs.writeFile( __dirname + "/../data/interns.json", JSON.stringify(interns), (err) => {
-          if (err) {
-            console.log("Error writing file:", err);
-            res.status(500).send("Error writing file");
-            return;
-          }
-
-          res.json({ message: "Intern added successfully" });
-        }
-      );
-
-    }
-  });
-
-
-});
-
-
-
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
