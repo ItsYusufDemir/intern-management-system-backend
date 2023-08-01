@@ -19,7 +19,7 @@ const uploadPhoto = (req, res) => {
 
     const photoFile = req.files.file;
 
-    const uploadDir = path.resolve(__dirname, '..', "uploads/photos");
+    const uploadDir = path.resolve(__dirname, '..', "uploads/garbage");
 
     const extension = photoFile.name.split('.').pop();
     const uniqueFilename = uuidvv4() + "." + extension;
@@ -47,13 +47,15 @@ const uploadCV = (req, res) => {
 
     const cvFile = req.files.file;
 
-    const uploadDir = path.resolve(__dirname, '..', "uploads/cv");
+    const uploadDir = path.resolve(__dirname, '..', "uploads/garbage");
 
     const extension = cvFile.name.split('.').pop();
     const uniqueFilename = uuidvv4() + "." + extension;
 
     
     const imagePath = path.join(uploadDir, uniqueFilename);
+
+
 
     cvFile.mv(imagePath, (error) => {
         if(error) {
@@ -106,16 +108,19 @@ const deleteCv = (req, res) => {
             console.log("cv not found");
             return res.status(404).json({ message: "CV not found" });
         }
+        else{
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error("Error deleting CV");
+                  return res.status(500).json({ message: "Error deleting CV"});
+                }
+              
+                res.json({ message: "CV deleted successfully" });
+            });
+        }
     });
 
-    fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error("Error deleting CV");
-          return res.status(500).json({ message: "Error deleting CV"});
-        }
-      
-        res.json({ message: "CV deleted successfully" });
-    });
+    
 
 }
 
@@ -130,17 +135,52 @@ const deletePhoto = (req, res) => {
             console.log("Photo not found");
             return res.status(404).json({ message: "Photo not found" });
         }
+        else{
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error("Error deleting photo");
+                  return res.status(500).json({ message: "Error deleting photo"});
+                }
+              
+                res.json({ message: "Photo deleted successfully" });
+            });
+        }
         
     });
 
-    fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error("Error deleting photo");
-          return res.status(500).json({ message: "Error deleting photo"});
+
+
+    
+}
+
+
+const deleteFromGarbage = (req, res) => {
+
+    const fileName = req.params.fileName;
+    
+    const filePath = path.join(uploadDir,"garbage/", fileName);
+
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if(err) {
+            console.log("Garbage not found");
+            return res.status(404).json({ message: "Garbage not found" });
         }
-      
-        res.json({ message: "Photo deleted successfully" });
+        else{
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error("Error deleting garbage");
+                  return res.status(500).json({ message: "Error deleting garbage"});
+                }
+              
+                res.json({ message: "Garbage deleted successfully" });
+            });
+        }
+        
     });
+
+
+    
+    
 }
 
 
@@ -152,6 +192,7 @@ const UploadController = {
     getCv: getCv,
     deleteCv: deleteCv,
     deletePhoto: deletePhoto,
+    deleteFromGarbage: deleteFromGarbage,
 }
 
 export default UploadController;

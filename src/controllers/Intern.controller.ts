@@ -1,5 +1,11 @@
+import path, { dirname } from "path";
 import pool from "../utils/database.js";
 import Queries from "../utils/queries.js";
+import { fileURLToPath } from "url";
+import fs from "fs";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 const getIntern = (req, res) =>{
     pool.query(Queries.getInternsQuery, (err, results) => {
@@ -60,6 +66,36 @@ const addIntern = (req, res) => {
         }
 
     });
+
+    if(cv_url !== null){ //If the intern is added, then move the file from garbage
+        const fileName = cv_url.split("/").pop()
+
+        const sourceFilePath = path.join(__dirname, "../uploads/garbage", fileName);
+        const destination = path.join(__dirname, "../uploads/cv", fileName);
+        
+        fs.rename(sourceFilePath, destination, (error) => {
+            if(error){
+                console.log("Error while moving CV from garbage");
+            }
+        });
+
+    }
+
+    if(photo_url !== null){ //If the intern is added, then move the file from garbage
+        const fileName = photo_url.split("/").pop()
+
+        const sourceFilePath = path.join(__dirname, "../uploads/garbage", fileName);
+        const destination = path.join(__dirname, "../uploads/photos", fileName);
+        
+        fs.rename(sourceFilePath, destination, (error) => {
+            if(error){
+                console.log("Error while moving photo from garbage");
+            }
+        });
+    }
+
+
+
 }
 
 

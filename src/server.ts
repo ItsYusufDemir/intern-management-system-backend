@@ -10,6 +10,7 @@ import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
+import { emptyGarbegeFolder } from "./utils/garbage.js";
 
 const app = express();
 
@@ -38,9 +39,9 @@ app.use(morgan(function (tokens, req, res){
 }));
 
 
-
-
 app.use(bodyParser.json()); //converts body to json
+
+emptyGarbegeFolder(); //Empty garbage folder while starting
 
 const server = http.createServer(app);
 
@@ -63,6 +64,8 @@ app.use("/api/teams", teamsRoute);
 
 //Uploads
 app.use("/uploads", uploadRouter);
+
+
 
 
 
