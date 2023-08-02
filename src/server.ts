@@ -8,6 +8,7 @@ import {Intern} from "./models/Intern.js";
 import internsRoute from "./routes/InternsRouter.js";
 import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
+import userRouter from "./routes/UserRouter.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
 import { emptyGarbegeFolder } from "./utils/garbage.js";
@@ -57,6 +58,7 @@ app.use("/api/interns", internsRoute);
 app.use("/api/teams", teamsRoute);
 
 //Register: post /user
+app.use("/api/users", userRouter);
 
 //Login: post /session
 

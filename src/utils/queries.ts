@@ -16,6 +16,11 @@ const addTeamQuery = ("INSERT INTO teams (team_name, assignments, team_success)"
 const deleteTeamQuery = "DELETE FROM teams WHERE team_id = $1";
 const updateTeamQuery = "UPDATE teams SET team_name = $2, assignments = $3, team_success = $4 WHERE team_id = $1";
 
+//User Queries
+const addUserQuery = ("INSERT INTO users (username, password, role)" + 
+"VALUES ($1, $2, $3);");
+const checkUserExists = "SELECT s FROM users s WHERE s.username = $1";
+
 
 
 
@@ -33,6 +38,9 @@ const Queries = {
     addTeamQuery: addTeamQuery,
     deleteTeamQuery: deleteTeamQuery,
     updateTeamQuery: updateTeamQuery,
+
+    addUserQuery: addUserQuery,
+    checkUserExists: checkUserExists,
 }
 
 export default Queries;
