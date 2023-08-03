@@ -19,7 +19,8 @@ const updateTeamQuery = "UPDATE teams SET team_name = $2, assignments = $3, team
 //User Queries
 const addUserQuery = ("INSERT INTO users (username, password, role)" + 
 "VALUES ($1, $2, $3);");
-const checkUserExists = "SELECT s FROM users s WHERE s.username = $1";
+const checkUserExistsQuery = "SELECT s FROM users s WHERE s.username = $1";
+const getUserQuery = "SELECT * FROM users WHERE username = $1";
 
 
 
@@ -40,7 +41,8 @@ const Queries = {
     updateTeamQuery: updateTeamQuery,
 
     addUserQuery: addUserQuery,
-    checkUserExists: checkUserExists,
+    checkUserExistsQuery: checkUserExistsQuery,
+    getUserQuery: getUserQuery,
 }
 
 export default Queries;

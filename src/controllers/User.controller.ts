@@ -2,41 +2,63 @@ import path, { dirname } from "path";
 import pool from "../utils/database.js";
 import Queries from "../utils/queries.js";
 import { fileURLToPath } from "url";
-import fs from "fs";
+import brcrypt from "bcrypt";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const addUser = (req, res) => {
+const addUser = async (req, res) => {
 
-    const {name, pwd, role} = req.body;
+    const {username, password, role} = req.body;
 
-    pool.query(Queries.checkUserExists, [name], (err,results) => {
-        if(err){
-            console.log("Error happened while checking user");
-            res.end();
+    try {
+        const result = await pool.query(Queries.checkUserExistsQuery, [username]);
+        if(result.rows.length) {
+            console.log("User is aldeady exists!");
+            res.status(409).json({'message': 'User is already exists!'}); //Conflict
         }
         else{
-            if(results.rows.length){
-                console.log("User is aldready exists");
-                res.status(400).json();
+            const hashedPassword = await brcrypt.hash(password, 10);
+
+            await pool.query(Queries.addUserQuery, [username, hashedPassword, role]);
+            console.log("User created successfully");
+            res.status(201).json({"success": 'New user ${username} created!'});
+        }
+    }
+    catch (error){
+        console.log(error);
+        res.status(500).json({'message': error.message});
+    }
+}
+
+
+const login = async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const response = await pool.query(Queries.getUserQuery, [username]);
+        if(!response.rows.length) {
+            console.log("User does not exists!")
+            res.sendStatus(401); //unauthorized
+        }
+        else{
+            const user = response.rows[0];
+
+            const match = await brcrypt.compare(password, user.password);
+            
+            if(match) {
+                console.log("user logged in");
             }
             else{
-                pool.query(Queries.addUserQuery, [name, pwd, role], (err, results) =>{
-                    if(err){
-                        console.log("Error happened while adding user");
-                        console.log(err);
-                        res.end();
-                    }
-                    else{
-                        console.log("User Created Successfully");
-                        res.end()
-                    }
-                });
+                res.sendStatus(401);
             }
         }
-    })
 
-   
+    }
+    catch (error){
+        console.log(error);
+        res.status(500).json({'message': error.message});
+    }
 
 
 }
@@ -44,6 +66,7 @@ const addUser = (req, res) => {
 
 const UserController = {
     addUser: addUser,
+    login: login,
 }
 
 export default UserController;

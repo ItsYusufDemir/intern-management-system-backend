@@ -9,6 +9,7 @@ import internsRoute from "./routes/InternsRouter.js";
 import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
 import userRouter from "./routes/UserRouter.js";
+import loginRouter from "./routes/LoginRouter.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
 import { emptyGarbegeFolder } from "./utils/garbage.js";
@@ -21,9 +22,12 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.raw({ limit: '50mb', type: 'application/octet-stream' }));
 app.use(fileUpload());
 
-app.use(cors({
-  credentials: true
-}));
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true, // Allow sending cookies and other credentials
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -61,6 +65,7 @@ app.use("/api/teams", teamsRoute);
 app.use("/api/users", userRouter);
 
 //Login: post /session
+app.use("/auth", loginRouter);
 
 //logout: delete /session
 
