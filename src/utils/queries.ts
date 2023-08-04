@@ -21,6 +21,9 @@ const addUserQuery = ("INSERT INTO users (username, password, role)" +
 "VALUES ($1, $2, $3);");
 const checkUserExistsQuery = "SELECT s FROM users s WHERE s.username = $1";
 const getUserQuery = "SELECT * FROM users WHERE username = $1";
+const addRefreshToken = "UPDATE users SET refresh_token = $2 WHERE username = $1";
+const getUserByRefreshToken = "SELECT * FROM users WHERE refresh_token = $1";
+const deleteRefreshTokenQuery = "UPDATE users SET refresh_token = NULL WHERE refresh_token = $1"
 
 
 
@@ -43,6 +46,9 @@ const Queries = {
     addUserQuery: addUserQuery,
     checkUserExistsQuery: checkUserExistsQuery,
     getUserQuery: getUserQuery,
+    addRefreshToken: addRefreshToken,
+    getUserByRefreshToken: getUserByRefreshToken,
+    deleteRefreshTokenQuery: deleteRefreshTokenQuery,
 }
 
 export default Queries;

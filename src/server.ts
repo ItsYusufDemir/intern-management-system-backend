@@ -10,9 +10,14 @@ import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
 import userRouter from "./routes/UserRouter.js";
 import loginRouter from "./routes/LoginRouter.js";
+import logout from "./routes/logout.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
 import { emptyGarbegeFolder } from "./utils/garbage.js";
+import verifyJWT from "./middleware/verifyJWT.js";
+import cookieParser from "cookie-parser";
+import verifyRole from "./middleware/verifyRole.js";
+import ROLES_LIST from "../roles_list.js";
 
 const app = express();
 
@@ -26,6 +31,11 @@ const corsOptions = {
   origin: 'http://localhost:3000',
   credentials: true, // Allow sending cookies and other credentials
 };
+
+
+//middleware for cookies
+app.use(cookieParser());
+
 
 app.use(cors(corsOptions));
 
@@ -55,17 +65,22 @@ server.listen(5000, ()=>{
 })
 
 
+
+app.use("/auth", loginRouter); //Login
+app.use("/refresh", loginRouter); //Refresh access token
+app.use("/logout", logout); //Logout
+
+//Verify before fetching data
+app.use(verifyJWT);
+
 //Interns Router
-app.use("/api/interns", internsRoute);
+app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), internsRoute);
 
 //Teams router
 app.use("/api/teams", teamsRoute);
 
 //Register: post /user
 app.use("/api/users", userRouter);
-
-//Login: post /session
-app.use("/auth", loginRouter);
 
 //logout: delete /session
 
