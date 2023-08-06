@@ -16,6 +16,15 @@ const addTeamQuery = ("INSERT INTO teams (team_name, assignments, team_success)"
 const deleteTeamQuery = "DELETE FROM teams WHERE team_id = $1";
 const updateTeamQuery = "UPDATE teams SET team_name = $2, assignments = $3, team_success = $4 WHERE team_id = $1";
 
+//User Queries
+const addUserQuery = ("INSERT INTO users (username, password, role)" + 
+"VALUES ($1, $2, $3);");
+const checkUserExistsQuery = "SELECT s FROM users s WHERE s.username = $1";
+const getUserQuery = "SELECT * FROM users WHERE username = $1";
+const addRefreshToken = "UPDATE users SET refresh_token = $2 WHERE username = $1";
+const getUserByRefreshToken = "SELECT * FROM users WHERE refresh_token = $1";
+const deleteRefreshTokenQuery = "UPDATE users SET refresh_token = NULL WHERE refresh_token = $1"
+
 
 
 
@@ -33,6 +42,13 @@ const Queries = {
     addTeamQuery: addTeamQuery,
     deleteTeamQuery: deleteTeamQuery,
     updateTeamQuery: updateTeamQuery,
+
+    addUserQuery: addUserQuery,
+    checkUserExistsQuery: checkUserExistsQuery,
+    getUserQuery: getUserQuery,
+    addRefreshToken: addRefreshToken,
+    getUserByRefreshToken: getUserByRefreshToken,
+    deleteRefreshTokenQuery: deleteRefreshTokenQuery,
 }
 
 export default Queries;

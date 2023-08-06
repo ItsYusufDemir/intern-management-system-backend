@@ -4,6 +4,8 @@ import InternController from "../controllers/Intern.controller.js";
 
 
 
+
+
   router.get("/", InternController.getIntern);
 
   router.get("/:id", InternController.getInternById);

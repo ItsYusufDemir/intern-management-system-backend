@@ -3,13 +3,19 @@ import http from "http";
 import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
-import fs from "fs";
-import {Intern} from "./models/Intern.js";
 import internsRoute from "./routes/InternsRouter.js";
 import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
+import userRouter from "./routes/UserRouter.js";
+import loginRouter from "./routes/LoginRouter.js";
+import logout from "./routes/logout.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
+import { emptyGarbegeFolder } from "./utils/garbage.js";
+import verifyJWT from "./middleware/verifyJWT.js";
+import cookieParser from "cookie-parser";
+import verifyRole from "./middleware/verifyRole.js";
+import ROLES_LIST from "../roles_list.js";
 
 const app = express();
 
@@ -19,9 +25,17 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.raw({ limit: '50mb', type: 'application/octet-stream' }));
 app.use(fileUpload());
 
-app.use(cors({
-  credentials: true
-}));
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true, // Allow sending cookies and other credentials
+};
+
+
+//middleware for cookies
+app.use(cookieParser());
+
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -38,9 +52,9 @@ app.use(morgan(function (tokens, req, res){
 }));
 
 
-
-
 app.use(bodyParser.json()); //converts body to json
+
+emptyGarbegeFolder(); //Empty garbage folder while starting
 
 const server = http.createServer(app);
 
@@ -49,20 +63,30 @@ server.listen(5000, ()=>{
 })
 
 
+
+app.use("/auth", loginRouter); //Login
+app.use("/refresh", loginRouter); //Refresh access token
+app.use("/logout", logout); //Logout
+
+//Verify before fetching data
+app.use(verifyJWT);
+
 //Interns Router
-app.use("/api/interns", internsRoute);
+app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), internsRoute);
 
 //Teams router
-app.use("/api/teams", teamsRoute);
+app.use("/api/teams", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), teamsRoute);
 
 //Register: post /user
-
-//Login: post /session
+app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
 
 //logout: delete /session
 
 //Uploads
-app.use("/uploads", uploadRouter);
+app.use("/uploads", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), uploadRouter);
+
+
+
 
 
 

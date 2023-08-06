@@ -8,7 +8,6 @@ router.get("/photos/:id", UploadController.getPhoto);
 router.get("/cv/:id", UploadController.getCv);
 router.delete("/cv/:fileName", UploadController.deleteCv);
 router.delete("/photos/:fileName", UploadController.deletePhoto);
-
-
+router.delete("/garbage/:fileName", UploadController.deleteFromGarbage);
 
 export default router;
