@@ -64,13 +64,13 @@ const login = async (req, res) => {
                         }
                     },
                     process.env.ACCESS_TOKEN_SECRET,
-                    {'expiresIn': '15s'}
+                    {'expiresIn': '15m'}
                 );
 
                 const refreshToken = jsonwebtoken.sign(
                     {'username': user.username},
                     process.env.REFRESH_TOKEN_SECRET,
-                    {'expiresIn': '30s'} //1 day
+                    {'expiresIn': '1h'} //1 day
                 );
 
                 //Add jwt to the user
@@ -131,7 +131,7 @@ const hadnleRefreshToken = async (req, res) => {
                         }
                     },
                     process.env.ACCESS_TOKEN_SECRET,
-                    {'expiresIn': '15s'}
+                    {'expiresIn': '15m'}
 
                 );
                 return res.json({accessToken});

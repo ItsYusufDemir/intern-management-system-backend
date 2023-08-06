@@ -3,8 +3,6 @@ import http from "http";
 import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
-import fs from "fs";
-import {Intern} from "./models/Intern.js";
 import internsRoute from "./routes/InternsRouter.js";
 import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
@@ -77,15 +75,16 @@ app.use(verifyJWT);
 app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), internsRoute);
 
 //Teams router
-app.use("/api/teams", teamsRoute);
+app.use("/api/teams", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), teamsRoute);
 
 //Register: post /user
-app.use("/api/users", userRouter);
+app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
 
 //logout: delete /session
 
 //Uploads
-app.use("/uploads", uploadRouter);
+app.use("/uploads", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), uploadRouter);
+
 
 
 
