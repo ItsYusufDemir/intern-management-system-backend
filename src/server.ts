@@ -80,7 +80,6 @@ app.use("/api/teams", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), teams
 //Register: post /user
 app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
 
-//logout: delete /session
 
 //Uploads
 app.use("/uploads", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), uploadRouter);

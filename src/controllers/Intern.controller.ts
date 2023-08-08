@@ -15,7 +15,7 @@ const getIntern = (req, res) =>{
 }
 
 const getInternById = (req, res) =>{
-    const id = req.params.id;;
+    const id = req.params.id;
     
     pool.query(Queries.getInternByIdQuery, [id], (err, results) => {
         if(err){
@@ -42,12 +42,12 @@ const addIntern = (req, res) => {
     pool.query(Queries.checkEmailExists, [email], (err, results) => {
         if(err){
             console.log("Could not check email exitst or not!");
-            res.end();
+            return res.end();
         }
         else{
             if(results.rows.length) {
                 console.log("Intern with given email is already exists");
-                res.end();
+                return res.sendStatus(409);
             }
             else{
                 //Add the student to the database
@@ -55,11 +55,11 @@ const addIntern = (req, res) => {
                     if(err){
                         console.log("Error happened while adding intern");
                         console.log(err);
-                        res.end();
+                        return res.end();
                     }
                     else{
                         console.log("Intern Created Successfully");
-                        res.status(201).json(results.rows[0]);
+                         return res.status(201).json(results.rows[0]);
                     }
                 });
             }
