@@ -12,26 +12,48 @@ const __dirname = path.dirname(__filename);
 
 const addUser = async (req, res) => {
 
-    const {username, password, role} = req.body;
+    const {username, password, role, team} = req.body;
 
     try {
         const result = await pool.query(Queries.checkUserExistsQuery, [username]);
         if(result.rows.length) {
             console.log("User is aldeady exists!");
-            res.status(409).json({'message': 'User is already exists!'}); //Conflict
+            return res.status(409).json({'message': 'User is already exists!'}); //Conflict
         }
         else{
             const hashedPassword = await brcrypt.hash(password, 10);
+            const response = await pool.query(Queries.addUserQuery, [username, hashedPassword, role]);
 
-            await pool.query(Queries.addUserQuery, [username, hashedPassword, role]);
+            if(role === 1984){ //If the user is a supervisor
+                const user_id = BigInt(response.rows[0].user_id);
+                
+                await pool.query(Queries.addSupervisorQuery, [user_id, team])
+            }
+            
+
             console.log("User created successfully");
-            res.status(201).json({"success": 'New user ${username} created!'});
+            return res.status(201).json({"success": 'New user ${username} created!'});
+
         }
     }
     catch (error){
         console.log(error);
         res.status(500).json({'message': error.message});
     }
+}
+
+
+const getUsers = async (req, res) => {
+
+    try {
+        const results = await pool.query(Queries.getUsersQuery);
+
+        res.status(200).json(results.rows);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({'message': error.message});
+    }
+
 }
 
 
@@ -108,12 +130,13 @@ const hadnleRefreshToken = async (req, res) => {
         const refreshToken = cookies.jwt;
         const response = await pool.query(Queries.getUserByRefreshToken, [refreshToken]);
         if(!response.rows.length) {
-            console.log(4);
             console.log("User does not exists!")
             return res.sendStatus(403); //Forbidden
         }
         
         const user = response.rows[0];
+        const role = user.role;
+        const username = user.username;
 
             
         jsonwebtoken.verify(
@@ -134,7 +157,7 @@ const hadnleRefreshToken = async (req, res) => {
                     {'expiresIn': '15m'}
 
                 );
-                return res.json({accessToken});
+                return res.json({accessToken, role,username});
             }
         )
         
@@ -183,6 +206,20 @@ const handleLogout = async (req, res) => {
 
 }
 
+const deleteUser = async (req, res) => {
+
+    console.log("deneme");
+    const username = req.params.username;
+
+    try {
+        await pool.query(Queries.deleteUserQuery, [username]);
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({'message': error.message});
+    }
+}
+
 
 
 
@@ -193,6 +230,8 @@ const UserController = {
     login: login,
     hadnleRefreshToken: hadnleRefreshToken,
     handleLogout: handleLogout,
+    getUsers: getUsers,
+    deleteUser: deleteUser,
 }
 
 export default UserController;

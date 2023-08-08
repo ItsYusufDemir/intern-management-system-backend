@@ -6,4 +6,5 @@ import UserController from "../controllers/User.controller.js";
 router.post("/", UserController.login);
 router.get("/", UserController.hadnleRefreshToken);
 
+
 export default router;
