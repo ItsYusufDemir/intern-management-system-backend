@@ -11,10 +11,10 @@ const updateInternQuery = "UPDATE interns SET first_name = $2, last_name = $3, i
 const getTeamsQuery = "SELECT * FROM teams";
 const getTeamByIdQuery = "SELECT * FROM teams WHERE team_id = $1";  //$1 is the first parameter
 const checkTeamExists = "SELECT s FROM teams s WHERE s.team_name = $1";
-const addTeamQuery = ("INSERT INTO teams (team_name, assignments, team_success)" + 
-"VALUES ($1, $2, $3) RETURNING *;");
-const deleteTeamQuery = "DELETE FROM teams WHERE team_id = $1";
-const updateTeamQuery = "UPDATE teams SET team_name = $2, assignments = $3, team_success = $4 WHERE team_id = $1";
+const addTeamQuery = ("INSERT INTO teams (team_name)" + 
+"VALUES ($1) RETURNING *;");
+const deleteTeamQuery = "DELETE FROM teams WHERE team_name = $1";
+const updateTeamQuery = "UPDATE teams SET team_name = $2 WHERE team_id = $1";
 
 //User Queries
 const addUserQuery = ("INSERT INTO users (username, password, role)" + 
@@ -26,8 +26,10 @@ const getUserByRefreshToken = "SELECT * FROM users WHERE refresh_token = $1";
 const deleteRefreshTokenQuery = "UPDATE users SET refresh_token = NULL WHERE refresh_token = $1"
 const addSupervisorQuery = ("INSERT INTO supervisors (user_id, team)" + 
 "VALUES ($1, $2)");
-const getUsersQuery = "SELECT user_id, username, role FROM users";
-const deleteUserQuery = "DELETE FROM users WHERE username = $1";
+const getUsersQuery = "SELECT u.*, s.team AS team FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
+const deleteUserQuery = "DELETE FROM users WHERE user_id = $1";
+const deleteSupervisorQuery = "DELETE FROM supervisors WHERE user_id = $1";
+const updateUserQuery = "UPDATE users SET username = $2, password = $3, role = $4  WHERE user_id = $1"
 
 
 
@@ -56,6 +58,8 @@ const Queries = {
     addSupervisorQuery: addSupervisorQuery,
     getUsersQuery: getUsersQuery,
     deleteUserQuery: deleteUserQuery,
+    deleteSupervisorQuery: deleteSupervisorQuery,
+    updateUserQuery: updateUserQuery,
 }
 
 export default Queries;
