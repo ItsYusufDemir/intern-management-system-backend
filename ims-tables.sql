@@ -1,5 +1,13 @@
+CREATE TABLE assignments (
+  supervisor_id BIGSERIAL NOT NULL PRIMARY KEY,
+  description VARCHAR(250) NOT NULL,
+  deadline DATE,
+  grade INTEGER,
+  complete BOOLEAN NOT NULL
+);
+
 CREATE TABLE supervisors (
-  team_id BIGSERIAL NOT NULL PRIMARY KEY,
+  supervisor_id BIGSERIAL NOT NULL PRIMARY KEY,
   user_id BIGINT UNIQUE NOT NULL,
   team VARCHAR(100) NOT NULL
 );

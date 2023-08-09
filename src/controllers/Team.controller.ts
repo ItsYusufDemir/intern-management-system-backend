@@ -30,30 +30,30 @@ const getTeamById = (req, res) =>{
 }
 
 const addTeam = (req, res) => {
-    const {team_name, assignments, team_success} = req.body;
+    const {team_name} = req.body;
 
     //Check if same team exits
     pool.query(Queries.checkTeamExists, [team_name], (err, results) => {
         if(err){
             console.log("Could not check team exitst or not!");
-            res.end();
+            return res.end();
         }
         else{
             if(results.rows.length) {
                 console.log("Team with given team_name is already exists");
-                res.end();
+                return res.sendStatus(409);
             }
             else{
                 //Add the team to the database
-                pool.query(Queries.addTeamQuery, [team_name, assignments, team_success], (err, results) =>{
+                pool.query(Queries.addTeamQuery, [team_name], (err, results) =>{
                     if(err){
                         console.log("Error happened while adding team");
                         console.log(err);
-                        res.end();
+                        return res.sendStatus(500);
                     }
                     else{
                         console.log("Team created successfully");
-                        res.status(201).json(results.rows[0]);
+                        return res.status(201).json(results.rows[0]);
                     }
                 });
             }
@@ -80,10 +80,9 @@ const deleteTeam = (req, res) => {
 }
 
 const updateTeam = (req, res) => {
-    const id = req.params.id;
-    const { team_name, assignments, team_success} = req.body;
+    const { team_id, team_name } = req.body;
 
-    pool.query(Queries.getTeamByIdQuery, [id], (err, results) => {
+    pool.query(Queries.getTeamByIdQuery, [team_id], (err, results) => {
         if(err) {
             console.log("Error happened while finding team by id");
             res.end();
@@ -92,18 +91,19 @@ const updateTeam = (req, res) => {
             const noTeamFound = !results.rows.length;
             if(noTeamFound) {
                 console.log("Team Does Not Exist In the Database");
-                res.send("Team Does Not Exist In the Database");
+                return res.sendStatus(404);
             }
             else{
-                pool.query(Queries.updateTeamQuery, [id, team_name, assignments, team_success], (err, results) => {
+                pool.query(Queries.updateTeamQuery, [team_id, team_name], (err, results) => {
                     if(err) {
                         console.log("Error happened while updating team by id");
                         console.log(err);
-                        res.end();
+                        return res.sendStatus(500);
                     }
                     else{
+                        console.log("test", team_id, team_name)
                         console.log("Team Updated Successfully");
-                        res.status(200).send("Team Updated Successfully");
+                        return res.status(200).send("Team Updated Successfully");
                     }
                 })
             }

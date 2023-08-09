@@ -48,7 +48,7 @@ const getUsers = async (req, res) => {
     try {
         const results = await pool.query(Queries.getUsersQuery);
 
-        res.status(200).json(results.rows);
+        return res.status(200).json(results.rows);
     } catch (error) {
         console.log(error);
         res.status(500).json({'message': error.message});
@@ -208,15 +208,53 @@ const handleLogout = async (req, res) => {
 
 const deleteUser = async (req, res) => {
 
-    console.log("deneme");
-    const username = req.params.username;
+    const user_id = req.params.user_id;
 
     try {
-        await pool.query(Queries.deleteUserQuery, [username]);
+        await pool.query(Queries.deleteUserQuery, [user_id]);
+
+        await pool.query(Queries.deleteSupervisorQuery, [user_id]);
+        
         res.sendStatus(200);
     } catch (error) {
         console.log(error);
         return res.status(500).json({'message': error.message});
+    }
+}
+
+const updateUser = async (req, res) => {
+
+    const {user_id, username, password, role, team} = req.body;
+
+    try {
+        const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
+        if(!result.rows.length) {
+            console.log("User does not exists!");
+            return res.status(404).json({'message': 'User does not exists!'});
+        }
+        else{
+            const hashedPassword = await brcrypt.hash(password, 10);
+            const response = await pool.query(Queries.updateUserQuery, [user_id, username, hashedPassword, role]);
+
+            try {
+                await pool.query(Queries.deleteSupervisorQuery, [user_id])
+            } catch (error) {
+                
+            }
+
+            if(role === 1984){ //If the user is a supervisor
+                await pool.query(Queries.addSupervisorQuery, [user_id, team])
+            }
+            
+
+            console.log("User created successfully");
+            return res.status(201).json({"success": 'New user ${username} created!'});
+
+        }
+    }
+    catch (error){
+        console.log(error);
+        res.status(500).json({'message': error.message});
     }
 }
 
@@ -232,6 +270,7 @@ const UserController = {
     handleLogout: handleLogout,
     getUsers: getUsers,
     deleteUser: deleteUser,
+    updateUser: updateUser,
 }
 
 export default UserController;
