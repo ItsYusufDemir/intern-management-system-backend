@@ -1,8 +1,10 @@
 CREATE TABLE assignments (
-  supervisor_id BIGSERIAL NOT NULL PRIMARY KEY,
+  assignment_id BIGSERIAL NOT NULL PRIMARY KEY,
+  intern_id INTEGER,
   description VARCHAR(250) NOT NULL,
-  deadline DATE,
+  deadline INTEGER,
   grade INTEGER,
+  weight INTEGER,
   complete BOOLEAN NOT NULL
 );
 

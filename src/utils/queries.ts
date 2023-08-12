@@ -2,10 +2,10 @@
 const getInternsQuery = "SELECT * FROM interns";
 const getInternByIdQuery = "SELECT * FROM interns WHERE intern_id = $1";  //$1 is the first parameter
 const checkEmailExists = "SELECT s FROM interns s WHERE s.email = $1";
-const addInternQuery = ("INSERT INTO interns (first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success, assignment_grades)" + 
-"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *;");
+const addInternQuery = ("INSERT INTO interns (first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success)" + 
+"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *;");
 const deleteInternQuery = "DELETE FROM interns WHERE intern_id = $1";
-const updateInternQuery = "UPDATE interns SET first_name = $2, last_name = $3, id_no = $4, phone_number = $5, email = $6, uni = $7, major = $8, grade = $9, gpa = $10, team_id = $11, birthday = $12, internship_starting_date = $13, internship_ending_date = $14, cv_url = $15, photo_url = $16, overall_success = $17, assignment_grades = $18 WHERE intern_id = $1";
+const updateInternQuery = "UPDATE interns SET first_name = $2, last_name = $3, id_no = $4, phone_number = $5, email = $6, uni = $7, major = $8, grade = $9, gpa = $10, team_id = $11, birthday = $12, internship_starting_date = $13, internship_ending_date = $14, cv_url = $15, photo_url = $16, overall_success = $17 WHERE intern_id = $1";
 
 //Team Queries
 const getTeamsQuery = "SELECT * FROM teams";
@@ -31,8 +31,13 @@ const deleteUserQuery = "DELETE FROM users WHERE user_id = $1";
 const deleteSupervisorQuery = "DELETE FROM supervisors WHERE user_id = $1";
 const updateUserQuery = "UPDATE users SET username = $2, password = $3, role = $4  WHERE user_id = $1"
 
-
-
+//Assignment Queries
+const getAssignmentsQuery = "SELECT * FROM assignments";
+const getAssignmentsByInternIdQuery = "SELECT * FROM assignments WHERE intern_id = $1";
+const addAssignmentQuery = "INSERT INTO assignments (intern_id, description, deadline, weight, complete)" +
+"VALUES ($1, $2, $3, $4, $5) RETURNING assignment_id";
+const updateAssignmentQuery = "UPDATE assignments SET intern_id = $2, description = $3, deadline = $4, grade = $5, weight = $6, complete = $7 WHERE assignment_id = $1";
+const deleteAssignmentQuery = "DELETE FROM assignments WHERE assignment_id = $1 RETURNING intern_id";
 
 const Queries = {
     getInternsQuery: getInternsQuery ,
@@ -60,6 +65,12 @@ const Queries = {
     deleteUserQuery: deleteUserQuery,
     deleteSupervisorQuery: deleteSupervisorQuery,
     updateUserQuery: updateUserQuery,
+
+    getAssignmentsQuery: getAssignmentsQuery,
+    getAssignmentsByInternIdQuery: getAssignmentsByInternIdQuery,
+    addAssignmentQuery: addAssignmentQuery,
+    updateAssignmenQuery: updateAssignmentQuery,
+    deleteAssignmentQuery: deleteAssignmentQuery,
 }
 
 export default Queries;
