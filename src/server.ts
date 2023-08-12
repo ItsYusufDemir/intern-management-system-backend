@@ -8,6 +8,7 @@ import teamsRoute from "./routes/TeamsRouter.js";
 import uploadRouter from "./routes/UploadRouter.js";
 import userRouter from "./routes/UserRouter.js";
 import loginRouter from "./routes/LoginRouter.js";
+import AssignmentRouter from "./routes/AssignmentRouter.js";
 import logout from "./routes/logout.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
@@ -77,17 +78,14 @@ app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), int
 //Teams router
 app.use("/api/teams", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), teamsRoute);
 
+//Assignment Router
+app.use("/api/assignments", verifyRole(ROLES_LIST.Supervisor, ROLES_LIST.Admin), AssignmentRouter);
+
 //Register: post /user
 app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
 
-
 //Uploads
 app.use("/uploads", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), uploadRouter);
-
-
-
-
-
 
 //Invalid Router
 app.use((req, res) => {

@@ -8,13 +8,17 @@ const verifyJWT = (req, res, next) => {
     const authHeader = req.headers.authorization || req.headers.Authorization;
     let token: any;
     if(authHeader){ //access token is in the header of the req
-        if(!authHeader?.startsWith("Bearer ")) return res.sendStatus(401);
+        if(!authHeader?.startsWith("Bearer ")) {
+            console.log("izin verilmedi beraer ile başlamıyor")
+             return res.sendStatus(401);
+        }
         token = authHeader.split(' ')[1];
     }
     else if(req.query.access_token){ //access token is in the req url
         token = req.query.access_token;
     }
     else{
+        console.log("izin verilmedi authheader yok", req.headers);
         return res.sendStatus(401); //There is no access token
     }
     
