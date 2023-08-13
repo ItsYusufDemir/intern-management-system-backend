@@ -10,8 +10,8 @@ CREATE TABLE assignments (
 
 CREATE TABLE supervisors (
   supervisor_id BIGSERIAL NOT NULL PRIMARY KEY,
-  user_id BIGINT UNIQUE NOT NULL,
-  team VARCHAR(100) NOT NULL
+  user_id BIGINT NOT NULL,
+  team_id INTEGER NOT NULL
 );
 
 CREATE TABLE users (
@@ -24,9 +24,7 @@ CREATE TABLE users (
 
 CREATE TABLE teams (
     team_id BIGSERIAL NOT NULL PRIMARY KEY,
-    team_name VARCHAR(50) NOT NULL,
-    assignments TEXT[] NOT NULL,
-    team_success NUMERIC(5,2)
+    team_name VARCHAR(50) NOT NULL
 );
 
 

@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const addUser = async (req, res) => {
 
-    const {username, password, role, team} = req.body;
+    const {username, password, role, team_id} = req.body;
 
     try {
         const result = await pool.query(Queries.checkUserExistsQuery, [username]);
@@ -27,7 +27,7 @@ const addUser = async (req, res) => {
             if(role === 1984){ //If the user is a supervisor
                 const user_id = BigInt(response.rows[0].user_id);
                 
-                await pool.query(Queries.addSupervisorQuery, [user_id, team])
+                await pool.query(Queries.addSupervisorQuery, [user_id, team_id])
             }
             
 

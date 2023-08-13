@@ -24,9 +24,9 @@ const getUserQuery = "SELECT * FROM users WHERE username = $1";
 const addRefreshToken = "UPDATE users SET refresh_token = $2 WHERE username = $1";
 const getUserByRefreshToken = "SELECT * FROM users WHERE refresh_token = $1";
 const deleteRefreshTokenQuery = "UPDATE users SET refresh_token = NULL WHERE refresh_token = $1"
-const addSupervisorQuery = ("INSERT INTO supervisors (user_id, team)" + 
+const addSupervisorQuery = ("INSERT INTO supervisors (user_id, team_id)" + 
 "VALUES ($1, $2)");
-const getUsersQuery = "SELECT u.*, s.team AS team FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
+const getUsersQuery = "SELECT u.*, s.team_id AS team_id FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
 const deleteUserQuery = "DELETE FROM users WHERE user_id = $1";
 const deleteSupervisorQuery = "DELETE FROM supervisors WHERE user_id = $1";
 const updateUserQuery = "UPDATE users SET username = $2, password = $3, role = $4  WHERE user_id = $1"

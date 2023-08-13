@@ -50,7 +50,7 @@ const addIntern = (req, res) => {
                 return res.sendStatus(409);
             }
             else{
-                //Add the student to the database
+                //Add the intern to the database
                 pool.query(Queries.addInternQuery, [first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success], (err, results) =>{
                     if(err){
                         console.log("Error happened while adding intern");
@@ -145,8 +145,36 @@ const updateIntern = (req, res) => {
             }
         }
 
-
     });
+
+    console.log("buraya iniyor mu?", cv_url, photo_url);
+    if(cv_url !== null){ //If the intern is added, then move the file from garbage
+
+        const fileName = cv_url.split("/").pop()
+
+        const sourceFilePath = path.join(__dirname, "../uploads/garbage", fileName);
+        const destination = path.join(__dirname, "../uploads/cv", fileName);
+        
+        fs.rename(sourceFilePath, destination, (error) => {
+            if(error){
+                console.log("Error while moving CV from garbage");
+            }
+        });
+
+    }
+
+    if(photo_url !== null){ //If the intern is added, then move the file from garbage
+        const fileName = photo_url.split("/").pop()
+
+        const sourceFilePath = path.join(__dirname, "../uploads/garbage", fileName);
+        const destination = path.join(__dirname, "../uploads/photos", fileName);
+        
+        fs.rename(sourceFilePath, destination, (error) => {
+            if(error){
+                console.log("Error while moving photo from garbage");
+            }
+        });
+    }
 }
 
 

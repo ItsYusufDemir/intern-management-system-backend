@@ -58,7 +58,7 @@ const getAssignmentsForIntern = async (req, res) => {
         const intern_id = req.params.intern_id
 
         const results = await pool.query(Queries.getAssignmentsByInternIdQuery, [intern_id]);
-
+        
        
         return res.status(200).json(results.rows);
     } catch (error) {

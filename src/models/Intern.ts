@@ -10,9 +10,9 @@ export interface Intern {
   grade: number | undefined;
   gpa: number | undefined;
   team_id: number;
-  birthday: Date | undefined;
-  internship_starting_date: Date;
-  internship_ending_date: Date;
+  birthday?: number;
+  internship_starting_date: number;
+  internship_ending_date: number;
   cv_url: string | undefined;
   photo_url: string |undefined;
   overall_success: number | undefined;
