@@ -11,8 +11,6 @@ const addAssignment = async (req, res) => {
     try {
         const response = await pool.query(Queries.addAssignmentQuery, [intern_id, description, deadline, weight, complete]);
 
-        
-
         return res.status(200).json(response.rows);
     }
     catch (error){
