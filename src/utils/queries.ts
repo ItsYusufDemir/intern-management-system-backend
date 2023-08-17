@@ -4,7 +4,7 @@ const getInternByIdQuery = "SELECT * FROM interns WHERE intern_id = $1";  //$1 i
 const checkEmailExists = "SELECT s FROM interns s WHERE s.email = $1";
 const addInternQuery = ("INSERT INTO interns (first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success)" + 
 "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *;");
-const deleteInternQuery = "DELETE FROM interns WHERE intern_id = $1";
+const deleteInternQuery = "DELETE FROM interns WHERE intern_id = $1 RETURNING *";
 const updateInternQuery = "UPDATE interns SET first_name = $2, last_name = $3, id_no = $4, phone_number = $5, email = $6, uni = $7, major = $8, grade = $9, gpa = $10, team_id = $11, birthday = $12, internship_starting_date = $13, internship_ending_date = $14, cv_url = $15, photo_url = $16, overall_success = $17 WHERE intern_id = $1";
 
 //Team Queries
@@ -24,9 +24,9 @@ const getUserQuery = "SELECT * FROM users WHERE username = $1";
 const addRefreshToken = "UPDATE users SET refresh_token = $2 WHERE username = $1";
 const getUserByRefreshToken = "SELECT * FROM users WHERE refresh_token = $1";
 const deleteRefreshTokenQuery = "UPDATE users SET refresh_token = NULL WHERE refresh_token = $1"
-const addSupervisorQuery = ("INSERT INTO supervisors (user_id, team)" + 
+const addSupervisorQuery = ("INSERT INTO supervisors (user_id, team_id)" + 
 "VALUES ($1, $2)");
-const getUsersQuery = "SELECT u.*, s.team AS team FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
+const getUsersQuery = "SELECT u.*, s.team_id AS team_id FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
 const deleteUserQuery = "DELETE FROM users WHERE user_id = $1";
 const deleteSupervisorQuery = "DELETE FROM supervisors WHERE user_id = $1";
 const updateUserQuery = "UPDATE users SET username = $2, password = $3, role = $4  WHERE user_id = $1"
@@ -38,6 +38,27 @@ const addAssignmentQuery = "INSERT INTO assignments (intern_id, description, dea
 "VALUES ($1, $2, $3, $4, $5) RETURNING assignment_id";
 const updateAssignmentQuery = "UPDATE assignments SET intern_id = $2, description = $3, deadline = $4, grade = $5, weight = $6, complete = $7 WHERE assignment_id = $1";
 const deleteAssignmentQuery = "DELETE FROM assignments WHERE assignment_id = $1 RETURNING intern_id";
+const deleteAssignmentsQuery = "DELETE FROM assignments WHERE intern_id = $1";
+
+//Application Queries
+const addApplicationQuery = ("INSERT INTO applications (application_status, application_date, first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success)" + 
+"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)");
+const getApplicationsQuery = "SELECT * FROM applications";
+const deleteApplicationQuery = "DELETE FROM applications WHERE application_id = $1";
+const rejectApplicationQuery = "UPDATE applications SET application_status = 'rejected' WHERE application_id = $1 RETURNING email";
+const acceptApplicationQuery = "INSERT INTO interns (first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success) "+
+"SELECT first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success "+
+"FROM applications WHERE application_id = $1 RETURNING *;";
+const updateApplicationStatusQuery = "UPDATE applications SET application_status = 'accepted' WHERE application_id = $1";
+
+
+//Attendance Queries
+const checkAttendanceExistsQuery = "SELECT * FROM attendances WHERE intern_id = $1 AND attendance_date = $2";
+const takeAttendaceQuery = "INSERT INTO attendances (intern_id, attendance_date, status, note) " + 
+"VALUES ($1, $2, $3, $4)";
+const updateAttendanceQuery = "UPDATE attendances SET status = $3, note = $4 WHERE intern_id = $1 AND attendance_date = $2"
+const getAttendancesForInternQuery = "SELECT * FROM attendances WHERE intern_id = $1";
+const deleteAttendancesQuery = "DELETE FROM attendances WHERE intern_id = $1";
 
 const Queries = {
     getInternsQuery: getInternsQuery ,
@@ -71,6 +92,20 @@ const Queries = {
     addAssignmentQuery: addAssignmentQuery,
     updateAssignmenQuery: updateAssignmentQuery,
     deleteAssignmentQuery: deleteAssignmentQuery,
+    deleteAssignmentsQuery: deleteAssignmentsQuery,
+
+    addApplicationQuery: addApplicationQuery,
+    getApplicationsQuery: getApplicationsQuery,
+    deleteApplicationQuery: deleteApplicationQuery,
+    rejectApplicationQuery: rejectApplicationQuery,
+    acceptApplicationQuery: acceptApplicationQuery,
+    updateApplicationStatusQuery: updateApplicationStatusQuery,
+
+    checkAttendanceExistsQuery: checkAttendanceExistsQuery,
+    takeAttendaceQuery: takeAttendaceQuery,
+    updateAttendanceQuery: updateAttendanceQuery,
+    getAttendancesForInternQuery: getAttendancesForInternQuery,
+    deleteAttendancesQuery: deleteAttendancesQuery
 }
 
 export default Queries;

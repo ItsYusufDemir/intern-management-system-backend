@@ -3,6 +3,7 @@ import pool from "../utils/database.js";
 import Queries from "../utils/queries.js";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { Intern } from "../models/Intern.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -50,7 +51,7 @@ const addIntern = (req, res) => {
                 return res.sendStatus(409);
             }
             else{
-                //Add the student to the database
+                //Add the intern to the database
                 pool.query(Queries.addInternQuery, [first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success], (err, results) =>{
                     if(err){
                         console.log("Error happened while adding intern");
@@ -99,19 +100,25 @@ const addIntern = (req, res) => {
 }
 
 
-const deleteIntern = (req, res) => {
+const deleteIntern = async (req, res) => {
     const id = req.params.id;
 
-    pool.query(Queries.deleteInternQuery, [id], (err, results) => {
-        if(err){
-            console.log("Error happened while deleting");
-            res.end();
-        }
-        else{
-            console.log("Intern Deleted Successfully");
-            res.end();
-        }
-    });
+    try {
+        const result = await pool.query(Queries.deleteInternQuery, [id]);
+        const intern: Intern = result.rows[0];
+        const username = intern.first_name + "." + intern.last_name;
+
+        await pool.query(Queries.deleteAttendancesQuery, [id]);
+
+        await pool.query(Queries.deleteAssignmentsQuery, [id]);
+
+        await pool.query("DELETE FROM users WHERE username = $1", [username]);
+        
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+    
 
 }
 
@@ -145,8 +152,36 @@ const updateIntern = (req, res) => {
             }
         }
 
-
     });
+
+    console.log("buraya iniyor mu?", cv_url, photo_url);
+    if(cv_url !== null){ //If the intern is added, then move the file from garbage
+
+        const fileName = cv_url.split("/").pop()
+
+        const sourceFilePath = path.join(__dirname, "../uploads/garbage", fileName);
+        const destination = path.join(__dirname, "../uploads/cv", fileName);
+        
+        fs.rename(sourceFilePath, destination, (error) => {
+            if(error){
+                console.log("Error while moving CV from garbage");
+            }
+        });
+
+    }
+
+    if(photo_url !== null){ //If the intern is added, then move the file from garbage
+        const fileName = photo_url.split("/").pop()
+
+        const sourceFilePath = path.join(__dirname, "../uploads/garbage", fileName);
+        const destination = path.join(__dirname, "../uploads/photos", fileName);
+        
+        fs.rename(sourceFilePath, destination, (error) => {
+            if(error){
+                console.log("Error while moving photo from garbage");
+            }
+        });
+    }
 }
 
 

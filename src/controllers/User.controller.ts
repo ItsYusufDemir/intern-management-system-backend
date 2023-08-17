@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const addUser = async (req, res) => {
 
-    const {username, password, role, team} = req.body;
+    const {username, password, role, team_id} = req.body;
 
     try {
         const result = await pool.query(Queries.checkUserExistsQuery, [username]);
@@ -27,7 +27,7 @@ const addUser = async (req, res) => {
             if(role === 1984){ //If the user is a supervisor
                 const user_id = BigInt(response.rows[0].user_id);
                 
-                await pool.query(Queries.addSupervisorQuery, [user_id, team])
+                await pool.query(Queries.addSupervisorQuery, [user_id, team_id])
             }
             
 
@@ -224,7 +224,7 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
 
-    const {user_id, username, password, role, team} = req.body;
+    const {user_id, username, password, role, team_id} = req.body;
 
     try {
         const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
@@ -243,7 +243,7 @@ const updateUser = async (req, res) => {
             }
 
             if(role === 1984){ //If the user is a supervisor
-                await pool.query(Queries.addSupervisorQuery, [user_id, team])
+                await pool.query(Queries.addSupervisorQuery, [user_id, team_id])
             }
             
 
