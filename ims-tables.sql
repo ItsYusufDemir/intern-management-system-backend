@@ -1,3 +1,34 @@
+CREATE TABLE applications (
+    application_id BIGSERIAL NOT NULL PRIMARY KEY,
+    application_status VARCHAR(15) NOT NULL,
+    application_date INTEGER NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    id_no VARCHAR(20) UNIQUE NOT NULL,
+    phone_number VARCHAR(20),
+    email VARCHAR(150) NOT NULL,
+    uni VARCHAR(150),
+    major VARCHAR(150),
+    grade INTEGER,
+    gpa NUMERIC(5,2),
+    team_id INTEGER,
+    birthday INTEGER,
+    internship_starting_date INTEGER NOT NULL,
+    internship_ending_date INTEGER NOT NULL,
+    cv_url VARCHAR(500),
+    photo_url VARCHAR(500),
+    overall_success INTEGER
+);
+
+
+CREATE TABLE attendances (
+  attendance_id BIGSERIAL NOT NULL PRIMARY KEY,
+  intern_id INTEGER NOT NULL,
+  attendance_date INTEGER NOT NULL,
+  status VARCHAR(15) NOT NULL,
+  note VARCHAR(250)
+);
+
 CREATE TABLE assignments (
   assignment_id BIGSERIAL NOT NULL PRIMARY KEY,
   intern_id INTEGER,

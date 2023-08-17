@@ -3,6 +3,7 @@ import pool from "../utils/database.js";
 import Queries from "../utils/queries.js";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { Intern } from "../models/Intern.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -99,19 +100,25 @@ const addIntern = (req, res) => {
 }
 
 
-const deleteIntern = (req, res) => {
+const deleteIntern = async (req, res) => {
     const id = req.params.id;
 
-    pool.query(Queries.deleteInternQuery, [id], (err, results) => {
-        if(err){
-            console.log("Error happened while deleting");
-            res.end();
-        }
-        else{
-            console.log("Intern Deleted Successfully");
-            res.end();
-        }
-    });
+    try {
+        const result = await pool.query(Queries.deleteInternQuery, [id]);
+        const intern: Intern = result.rows[0];
+        const username = intern.first_name + "." + intern.last_name;
+
+        await pool.query(Queries.deleteAttendancesQuery, [id]);
+
+        await pool.query(Queries.deleteAssignmentsQuery, [id]);
+
+        await pool.query("DELETE FROM users WHERE username = $1", [username]);
+        
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+    
 
 }
 
