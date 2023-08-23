@@ -21,6 +21,7 @@ import ROLES_LIST from "../roles_list.js";
 import ApplicationRouter from "./routes/ApplicationRouter.js";
 import compression from "compression";
 import AttendanceRouter from "./routes/AttendanceRouter.js";
+import NotificationRouter from "./routes/NotificationRouter.js";
 
 const app = express();
 
@@ -70,21 +71,36 @@ server.listen(5000, ()=>{
   console.log("Server running on port 5000");
 })
 
-
+/************************PUBLIC ROUTES************************** */
 
 app.use("/auth", loginRouter); //Login
 app.use("/refresh", loginRouter); //Refresh access token
 app.use("/logout", logout); //Logout
 app.use("/api/applications", apply); //Apply for internship
 
+/******************************SEMI VERIFICATION******************************/
+
+//Teams router
+app.use("/api/teams", teamsRoute);
+
+//Uploads
+app.use("/uploads", uploadRouter);
+
+
+
+
+/*****************************VERIFICATON**************************************/
+
 //Verify before fetching data
 app.use(verifyJWT);
 
+
+
+/******************************PRIVATE ROUTES***********************************/
+
+
 //Interns Router
 app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), internsRoute);
-
-//Teams router
-app.use("/api/teams", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), teamsRoute);
 
 //Assignment Router
 app.use("/api/assignments", verifyRole(ROLES_LIST.Supervisor, ROLES_LIST.Admin), AssignmentRouter);
@@ -98,8 +114,8 @@ app.use("/api/applications", verifyRole(ROLES_LIST.Admin), ApplicationRouter);
 //Attendance Router
 app.use("/api/attendances", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), AttendanceRouter);
 
-//Uploads
-app.use("/uploads", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), uploadRouter);
+//Notifications Router
+app.use("/api/notifications", NotificationRouter)
 
 //Invalid Router
 app.use((req, res) => {

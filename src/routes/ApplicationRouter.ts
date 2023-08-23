@@ -4,7 +4,7 @@ import ApplicationController from "../controllers/Application.controller.js";
 
 
 router.get("/", ApplicationController.getApplications);
-router.delete("/:applications_id", ApplicationController.deleteApplication);
+router.delete("/", ApplicationController.emptyArchieve);
 router.post("/accept/:applications_id", ApplicationController.acceptApplication);
 router.post("/reject/:applications_id", ApplicationController.rejectApplication);
 

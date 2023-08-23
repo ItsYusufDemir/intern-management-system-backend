@@ -8,7 +8,7 @@ const deleteInternQuery = "DELETE FROM interns WHERE intern_id = $1 RETURNING *"
 const updateInternQuery = "UPDATE interns SET first_name = $2, last_name = $3, id_no = $4, phone_number = $5, email = $6, uni = $7, major = $8, grade = $9, gpa = $10, team_id = $11, birthday = $12, internship_starting_date = $13, internship_ending_date = $14, cv_url = $15, photo_url = $16, overall_success = $17 WHERE intern_id = $1";
 
 //Team Queries
-const getTeamsQuery = "SELECT * FROM teams";
+const getTeamsQuery = "SELECT t.team_id, t.team_name, ARRAY_AGG(u.username) AS supervisors FROM teams t LEFT JOIN supervisors s ON t.team_id = s.team_id LEFT JOIN users u ON s.user_id = u.user_id GROUP BY t.team_id, t.team_name";
 const getTeamByIdQuery = "SELECT * FROM teams WHERE team_id = $1";  //$1 is the first parameter
 const checkTeamExists = "SELECT s FROM teams s WHERE s.team_name = $1";
 const addTeamQuery = ("INSERT INTO teams (team_name)" + 
@@ -60,6 +60,14 @@ const updateAttendanceQuery = "UPDATE attendances SET status = $3, note = $4 WHE
 const getAttendancesForInternQuery = "SELECT * FROM attendances WHERE intern_id = $1";
 const deleteAttendancesQuery = "DELETE FROM attendances WHERE intern_id = $1";
 
+//Notifications Queirs
+const getNotificationsQuery = "SELECT * FROM notifications";
+const addNotificationsQuery = "INSERT INTO notifications (user_id, type_code, content, timestamp, is_seen) " + 
+"VALUES ($1, $2, $3, $4, $5)";
+const handleSeenquery = "UPDATE notifications SET is_seen = true WHERE user_id = $1"
+const deleteOldNotificationsQuery = "DELETE FROM notifications WHERE timestamp < $1";
+const updateNotificationQuery = "UPDATE notifications SET user_id = $1, type_code = $2, content = $3, timestamp = $4, is_seen = $5 WHERE notification_id = $6";
+
 const Queries = {
     getInternsQuery: getInternsQuery ,
     getInternByIdQuery: getInternByIdQuery,
@@ -105,7 +113,13 @@ const Queries = {
     takeAttendaceQuery: takeAttendaceQuery,
     updateAttendanceQuery: updateAttendanceQuery,
     getAttendancesForInternQuery: getAttendancesForInternQuery,
-    deleteAttendancesQuery: deleteAttendancesQuery
+    deleteAttendancesQuery: deleteAttendancesQuery,
+
+    getNotificationsQuery: getNotificationsQuery,
+    addNotificationsQuery: addNotificationsQuery,
+    handleSeenquery: handleSeenquery,
+    deleteOldNotificationsQuery: deleteOldNotificationsQuery,
+    updateNotificationQuery: updateNotificationQuery,
 }
 
 export default Queries;
