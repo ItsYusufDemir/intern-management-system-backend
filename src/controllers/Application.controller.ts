@@ -9,8 +9,10 @@ import { fileURLToPath } from "url";
 import { User } from "../models/User.js";
 import { Intern } from "../models/Intern.js";
 import UserController from "./User.controller.js";
+import UploadController from "./Upload.controller.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const uploadDir = path.resolve(__dirname, '..', "uploads");
 
 const acceptMessage = "We'd like to tell you that your internship has been accepted! You can login from http://localhost:3000/login to your new account. We recommend you to change your password and then you can upload the required files. We wish success during this period :)\n"
 
@@ -90,11 +92,30 @@ const getApplications = async (req, res) => {
     }
 }
 
-const deleteApplication = async (req, res) => {
-    const application_id = req.params.applications_id
+const emptyArchieve = async (req, res) => {
 
     try {
-        await pool.query(Queries.deleteApplicationQuery, [application_id]);
+
+        const id_numbersResponse = await pool.query("SELECT id_no FROM interns");
+        const id_numbers = id_numbersResponse.rows.map(row => row.id_no);
+
+        const applicationsResponse = await pool.query(Queries.getApplicationsQuery);
+        const applications: Intern [] = applicationsResponse.rows;
+
+        const applicationsToDelete = applications.filter(application => {
+            return !id_numbers.includes(application.id_no) && application.application_status !== "waiting";
+        });
+
+        for(const applicationToDelete of applicationsToDelete) {
+            await pool.query(Queries.deleteApplicationQuery, [applicationToDelete.application_id]);
+
+            const cvName = applicationToDelete.cv_url.split("/").pop();
+            const photoName = applicationToDelete.photo_url.split("/").pop();
+
+            deleteFile(cvName, "cv");
+            deleteFile(photoName, "photos");
+        }
+
 
         return res.sendStatus(200);
     }
@@ -194,6 +215,25 @@ async function sendPasswordEmail(internEmail, username,  password) {
     }
   }
 
+  const deleteFile = (fileName: string, type: "cv" | "photos") => {
+
+    const filePath = path.join(uploadDir,`${type}/`, fileName);
+
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if(err) {
+            console.log("cv not found");
+            return;
+        }
+        else{
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error("Error deleting CV");
+                }
+            });
+        }
+    });
+  }
+
 
 
 
@@ -201,7 +241,7 @@ async function sendPasswordEmail(internEmail, username,  password) {
 
 const ApplicationController = {
     addApplication: addApplication,
-    deleteApplication: deleteApplication,
+    emptyArchieve: emptyArchieve,
     getApplications: getApplications,
     rejectApplication: rejectApplication,
     acceptApplication: acceptApplication,

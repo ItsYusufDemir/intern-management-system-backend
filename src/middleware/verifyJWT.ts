@@ -3,7 +3,6 @@ import 'dotenv/config';
 
 const verifyJWT = (req, res, next) => {
 
-    console.log("req bura",req.url);
 
     const authHeader = req.headers.authorization || req.headers.Authorization;
     let token: any;

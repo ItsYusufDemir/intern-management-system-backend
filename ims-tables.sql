@@ -20,6 +20,15 @@ CREATE TABLE applications (
     overall_success INTEGER
 );
 
+CREATE TABLE notifications (
+  notification_id BIGSERIAL NOT NULL PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  type_code INTEGER NOT NULL,
+  content VARCHAR(250) NOT NULL,
+  timestamp INTEGER NOT NULL,
+  is_seen BOOLEAN NOT NULL
+);
+
 
 CREATE TABLE attendances (
   attendance_id BIGSERIAL NOT NULL PRIMARY KEY,

@@ -77,6 +77,7 @@ const login = async (req, res) => {
             if(match) {
                 //create jwt
                 const role = user.role;
+                const user_id = user.user_id;
 
                 const accessToken = jsonwebtoken.sign(
                     { 
@@ -92,7 +93,7 @@ const login = async (req, res) => {
                 const refreshToken = jsonwebtoken.sign(
                     {'username': user.username},
                     process.env.REFRESH_TOKEN_SECRET,
-                    {'expiresIn': '1h'} //1 day
+                    {'expiresIn': '1h'} //Decides the time that user no needs to login again
                 );
 
                 //Add jwt to the user
@@ -100,7 +101,7 @@ const login = async (req, res) => {
 
                 console.log("User logged in");
                 res.cookie('jwt', refreshToken, {httpOnly: true, maxAge: 24 * 60 * 60 * 1000}); //maxAge: 1 day
-                res.json({accessToken, role});
+                res.json({accessToken, role, user_id});
             }
             else{
                 res.sendStatus(401);
@@ -135,6 +136,8 @@ const hadnleRefreshToken = async (req, res) => {
         }
         
         const user = response.rows[0];
+
+        const user_id = user.user_id;
         const role = user.role;
         const username = user.username;
 
@@ -157,7 +160,7 @@ const hadnleRefreshToken = async (req, res) => {
                     {'expiresIn': '15m'}
 
                 );
-                return res.json({accessToken, role,username});
+                return res.json({accessToken, role,username, user_id});
             }
         )
         
