@@ -9,17 +9,18 @@ import { Intern } from "../models/Intern.js";
 import { time } from "console";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+import cron from "node-cron";
 
 
 const getNotifications = async (req, res) => {
 
+    
     if(!req.role || !req.params.user_id){
         return res.end();
     }
-
+    
     try {
         const notifications = await generateNotifications(req.role, parseInt(req.params.user_id));
-
 
         return res.status(200).json(notifications);
 
@@ -56,34 +57,22 @@ const generateNotifications = async (role: number, user_id: number) => {
                 user_id: user_id,
                 type_code: 3, //waiting application
                 content: content,
-                timestamp: dayjs().add(30, "days").unix(), //show it for 30 days
+                timestamp: dayjs().unix(),
                 is_seen: false,
             }
             newNotifications.push(newNotification);
         }
 
         const endingInternships = interns?.filter(intern =>
-            intern.internship_ending_date - dayjs().unix() < 60 * 60 * 24 * 7 //if the internship is going to end in 7 days
-            );
+            intern.internship_ending_date - dayjs().unix() < 60 * 60 * 24 * 6 //if the internship is going to end in 6 days
+        );
 
     
         if(endingInternships) {
             endingInternships.map(endingInternship => {
                 const name = endingInternship.first_name + " " + endingInternship.last_name;
-                const endingDay = dayjs(endingInternship.internship_ending_date * 1000)
-                const today = dayjs().startOf("day");
-                const tomorrow = dayjs().add(1, "day").startOf("day");
 
-                let dayText = "";
-                if (endingDay.isSame(today, "day")) {
-                    dayText = "today";
-                } else if (endingDay.isSame(tomorrow, "day")) {
-                    dayText = "tomorrow";
-                } else {
-                    dayText = endingDay.format("dddd");
-                }
-
-                const content = `${name}'s internship will end on ${dayText} `
+                const content = `${name}'s internship will end on `
                 const timestamp = endingInternship.internship_ending_date;
 
                 const newNotification: Notification = {
@@ -97,6 +86,8 @@ const generateNotifications = async (role: number, user_id: number) => {
             })
         }
 
+        //We cancel storing the noticiation in the database
+        /*
         const notificationsResponse = await pool.query(Queries.getNotificationsQuery);
         const oldNotifications: Notification [] = notificationsResponse.rows;
 
@@ -132,8 +123,10 @@ const generateNotifications = async (role: number, user_id: number) => {
             }
 
         }));
-        
-        const sorted = await oldNotifications.slice().sort((a,b) => a.timestamp - b.timestamp);
+        */
+
+
+        const sorted = await newNotifications.slice().sort((a,b) => a.timestamp - b.timestamp);
 
         return sorted;
 

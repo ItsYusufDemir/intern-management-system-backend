@@ -10,6 +10,9 @@ import { User } from "../models/User.js";
 import { Intern } from "../models/Intern.js";
 import UserController from "./User.controller.js";
 import UploadController from "./Upload.controller.js";
+import dayjs from "dayjs";
+import InternController from "./Intern.controller.js";
+import shcedule from "node-schedule";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadDir = path.resolve(__dirname, '..', "uploads");
@@ -102,15 +105,15 @@ const emptyArchieve = async (req, res) => {
         const applicationsResponse = await pool.query(Queries.getApplicationsQuery);
         const applications: Intern [] = applicationsResponse.rows;
 
-        const applicationsToDelete = applications.filter(application => {
+        const applicationsToDelete: Intern [] = applications.filter(application => {
             return !id_numbers.includes(application.id_no) && application.application_status !== "waiting";
         });
 
         for(const applicationToDelete of applicationsToDelete) {
             await pool.query(Queries.deleteApplicationQuery, [applicationToDelete.application_id]);
 
-            const cvName = applicationToDelete.cv_url.split("/").pop();
-            const photoName = applicationToDelete.photo_url.split("/").pop();
+            const cvName = applicationToDelete.cv_url?.split("/").pop();
+            const photoName = applicationToDelete.photo_url?.split("/").pop();
 
             deleteFile(cvName, "cv");
             deleteFile(photoName, "photos");
@@ -137,7 +140,7 @@ const rejectApplication = async (req, res) => {
         const intern = response2.rows[0];
  
         if(intern) {
-            await pool.query("DELETE FROM users WHERE username = $1", [(intern.first_name + "." + intern.last_name)]);
+            await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]);
         }
         
    
@@ -153,6 +156,7 @@ const acceptApplication = async (req, res) => {
     const application_id = req.params.applications_id
 
     try {
+        
         const results = await pool.query(Queries.acceptApplicationQuery, [application_id]);
         await pool.query(Queries.updateApplicationStatusQuery, [application_id]);
 
@@ -162,14 +166,20 @@ const acceptApplication = async (req, res) => {
 
         //Add a new user
         const newUser: User = {
-            username: (intern.first_name + "." + intern.last_name),
+            username: intern.id_no,
             password: randomPassword,
             role: 2001,
         };
 
         await pool.query(Queries.addUserQuery, [newUser.username, hashedPassword, newUser.role]);
-
         await sendPasswordEmail(intern.email, newUser.username, randomPassword);
+
+       
+        const interval = dayjs(intern.internship_ending_date * 1000).add(7, "day").toDate();     
+        const job = shcedule.scheduleJob(newUser.username,interval, async () => {
+            await deleteIntern(intern);
+        })
+
         
         return res.sendStatus(200);
     }
@@ -178,6 +188,8 @@ const acceptApplication = async (req, res) => {
         return res.status(500).json({'message': error.message});
     }
 }
+
+
 
 function generateRandomPassword(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -217,6 +229,10 @@ async function sendPasswordEmail(internEmail, username,  password) {
 
   const deleteFile = (fileName: string, type: "cv" | "photos") => {
 
+    if(!fileName) {
+        return;
+    }
+
     const filePath = path.join(uploadDir,`${type}/`, fileName);
 
     fs.access(filePath, fs.constants.F_OK, (err) => {
@@ -234,8 +250,36 @@ async function sendPasswordEmail(internEmail, username,  password) {
     });
   }
 
+  const deleteIntern = async (intern: Intern) => {
 
+    if(!intern){
+        return;
+    }
+    try {
+        await pool.query(Queries.deleteInternQuery, [intern.intern_id]);
+  
+        await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]);
 
+        console.log(intern.id_no + " is deleted");
+        
+    } catch (error) {
+        console.log("Error happened while deleting scheduled intern");
+    }
+  }
+
+  const deleteApplication = async (req, res) => {
+
+    const application_id = req.params.application_id;
+    console.log("burası",application_id);
+
+    try {
+        await pool.query(Queries.deleteApplicationQuery, [application_id]);
+        return res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+  }
 
 
 
@@ -245,7 +289,7 @@ const ApplicationController = {
     getApplications: getApplications,
     rejectApplication: rejectApplication,
     acceptApplication: acceptApplication,
-
+    deleteApplication: deleteApplication,
 }
 
 export default ApplicationController;
