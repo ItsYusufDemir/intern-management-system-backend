@@ -13,7 +13,6 @@ import logout from "./routes/logout.js";
 import apply from "./routes/Apply.js";
 import fileUpload from "express-fileupload";
 import chalk from 'chalk';
-import { emptyGarbegeFolder } from "./utils/garbage.js";
 import verifyJWT from "./middleware/verifyJWT.js";
 import cookieParser from "cookie-parser";
 import verifyRole from "./middleware/verifyRole.js";
@@ -22,6 +21,7 @@ import ApplicationRouter from "./routes/ApplicationRouter.js";
 import compression from "compression";
 import AttendanceRouter from "./routes/AttendanceRouter.js";
 import NotificationRouter from "./routes/NotificationRouter.js";
+import { handleSchedule } from "./utils/Schedule.js";
 
 const app = express();
 
@@ -37,15 +37,12 @@ const corsOptions = {
 };
 
 
-//middleware for cookies
-app.use(cookieParser());
 
+app.use(cookieParser()); //middleware for cookies
 
 app.use(cors(corsOptions));
 
 app.use(express.json());
-
-
 
 
 //Print coming requests to the console
@@ -63,13 +60,18 @@ app.use(morgan(function (tokens, req, res){
 
 app.use(bodyParser.json()); //converts body to json
 
-emptyGarbegeFolder(); //Empty garbage folder while starting
+
+handleSchedule(); //Create necessesary schedules to handle them in specific time
+
 
 const server = http.createServer(app);
-
 server.listen(5000, ()=>{
   console.log("Server running on port 5000");
 })
+
+
+
+
 
 /************************PUBLIC ROUTES************************** */
 
@@ -78,7 +80,7 @@ app.use("/refresh", loginRouter); //Refresh access token
 app.use("/logout", logout); //Logout
 app.use("/api/applications", apply); //Apply for internship
 
-/******************************SEMI VERIFICATION******************************/
+/******************************SEMI PRIVATE ROUTES**************************/
 
 //Teams router
 app.use("/api/teams", teamsRoute);
@@ -87,23 +89,20 @@ app.use("/api/teams", teamsRoute);
 app.use("/uploads", uploadRouter);
 
 
-
-
 /*****************************VERIFICATON**************************************/
 
-//Verify before fetching data
+//Verify before accessing private routes
 app.use(verifyJWT);
-
 
 
 /******************************PRIVATE ROUTES***********************************/
 
 
 //Interns Router
-app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), internsRoute);
+app.use("/api/interns", internsRoute);
 
 //Assignment Router
-app.use("/api/assignments", verifyRole(ROLES_LIST.Supervisor, ROLES_LIST.Admin), AssignmentRouter);
+app.use("/api/assignments", AssignmentRouter);
 
 //Register: post /user
 app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
@@ -112,7 +111,7 @@ app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
 app.use("/api/applications", verifyRole(ROLES_LIST.Admin), ApplicationRouter);
 
 //Attendance Router
-app.use("/api/attendances", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), AttendanceRouter);
+app.use("/api/attendances", AttendanceRouter);
 
 //Notifications Router
 app.use("/api/notifications", NotificationRouter)

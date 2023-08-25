@@ -30,8 +30,9 @@ const verifyJWT = (req, res, next) => {
                 console.log("Izin verilmedi");
                  return res.sendStatus(403); //Invalid token
             }
-            req.user =decoded.UserInfo.username;
+            req.user = decoded.UserInfo.username;
             req.role = decoded.UserInfo.role;
+            req.user_id = decoded.UserInfo.user_id
             console.log("izin verildi");
             next();
         }

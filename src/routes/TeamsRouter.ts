@@ -5,7 +5,7 @@ import verifyJWT from "../middleware/verifyJWT.js";
 
 router.get("/", TeamController.getTeam);
 router.get("/:id", verifyJWT, TeamController.getTeamById);
-router.delete("/:id", verifyJWT, TeamController.deleteTeam);
+router.delete("/:team_id", verifyJWT, TeamController.deleteTeam);
 router.post("/", verifyJWT, TeamController.addTeam);
 router.put("/:id", verifyJWT, TeamController.updateTeam)
 

@@ -78,12 +78,16 @@ const login = async (req, res) => {
                 //create jwt
                 const role = user.role;
                 const user_id = user.user_id;
+                
+                const team_idResponse = await pool.query("SELECT * FROM supervisors WHERE user_id = $1", [user_id]);
+                const team_id = team_idResponse.rows[0]?.team_id;
 
                 const accessToken = jsonwebtoken.sign(
                     { 
                         "UserInfo": {
                         "username": user.username,
-                        "role": user.role
+                        "role": user.role,
+                        "user_id": user.user_id,
                         }
                     },
                     process.env.ACCESS_TOKEN_SECRET,
@@ -101,7 +105,7 @@ const login = async (req, res) => {
 
                 console.log("User logged in");
                 res.cookie('jwt', refreshToken, {httpOnly: true, maxAge: 24 * 60 * 60 * 1000}); //maxAge: 1 day
-                res.json({accessToken, role, user_id});
+                res.json({accessToken, role, user_id, team_id});
             }
             else{
                 res.sendStatus(401);
@@ -140,6 +144,7 @@ const hadnleRefreshToken = async (req, res) => {
         const user_id = user.user_id;
         const role = user.role;
         const username = user.username;
+        const team_id = user.team_id;
 
             
         jsonwebtoken.verify(
@@ -153,14 +158,15 @@ const hadnleRefreshToken = async (req, res) => {
                     { 
                         "UserInfo": {
                         "username": user.username,
-                        "role": user.role
+                        "role": user.role,
+                        "user_id": user.user_id,
                         }
                     },
                     process.env.ACCESS_TOKEN_SECRET,
                     {'expiresIn': '15m'}
 
                 );
-                return res.json({accessToken, role,username, user_id});
+                return res.json({accessToken, role,username, user_id, team_id});
             }
         )
         
