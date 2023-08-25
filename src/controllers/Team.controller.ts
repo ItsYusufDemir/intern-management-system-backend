@@ -63,19 +63,34 @@ const addTeam = (req, res) => {
 }
 
 
-const deleteTeam = (req, res) => {
-    const id = req.params.id;
+const deleteTeam = async (req, res) => {
+    const team_id = req.params.team_id;
 
-    pool.query(Queries.deleteTeamQuery, [id], (err, results) => {
-        if(err){
-            console.log("Error happened while deleting");
-            res.end();
+    console.log(team_id);
+    try {
+        const isUsedResponse = await pool.query("SELECT * FROM interns WHERE team_id = $1", [team_id]);
+        if(isUsedResponse.rows.length > 0) {
+            return res.sendStatus(403);
         }
-        else{
-            console.log("Intern Deleted Successfully");
-            res.end();
-        }
-    });
+
+        
+        pool.query(Queries.deleteTeamQuery, [team_id], (err, results) => {
+            if(err){
+                console.log("Error happened while deleting");
+                res.end();
+            }
+            else{
+                console.log("Intern Deleted Successfully");
+                res.end();
+            }
+        });
+        
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+
+    
 
 }
 

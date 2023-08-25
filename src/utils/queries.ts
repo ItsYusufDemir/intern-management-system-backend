@@ -1,6 +1,7 @@
 //Intern Queries
 const getInternsQuery = "SELECT * FROM interns";
-const getInternByIdQuery = "SELECT * FROM interns WHERE intern_id = $1";  //$1 is the first parameter
+const getInternByIdQuery = "SELECT * FROM interns WHERE intern_id = $1";  
+const getInternByUsernameQuery = "SELECT * FROM interns WHERE id_no = $1"; 
 const checkEmailExists = "SELECT s FROM interns s WHERE s.email = $1";
 const addInternQuery = ("INSERT INTO interns (first_name, last_name, id_no, phone_number, email, uni, major, grade, gpa, team_id, birthday, internship_starting_date, internship_ending_date, cv_url, photo_url, overall_success)" + 
 "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *;");
@@ -13,7 +14,7 @@ const getTeamByIdQuery = "SELECT * FROM teams WHERE team_id = $1";  //$1 is the 
 const checkTeamExists = "SELECT s FROM teams s WHERE s.team_name = $1";
 const addTeamQuery = ("INSERT INTO teams (team_name)" + 
 "VALUES ($1) RETURNING *;");
-const deleteTeamQuery = "DELETE FROM teams WHERE team_name = $1";
+const deleteTeamQuery = "DELETE FROM teams WHERE team_id = $1";
 const updateTeamQuery = "UPDATE teams SET team_name = $2 WHERE team_id = $1";
 
 //User Queries
@@ -26,7 +27,7 @@ const getUserByRefreshToken = "SELECT * FROM users WHERE refresh_token = $1";
 const deleteRefreshTokenQuery = "UPDATE users SET refresh_token = NULL WHERE refresh_token = $1"
 const addSupervisorQuery = ("INSERT INTO supervisors (user_id, team_id)" + 
 "VALUES ($1, $2)");
-const getUsersQuery = "SELECT u.*, s.team_id AS team_id FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
+const getUsersQuery = "SELECT u.user_id, u.username, u.role, s.team_id FROM users u LEFT JOIN supervisors s ON u.user_id = s.user_id";
 const deleteUserQuery = "DELETE FROM users WHERE user_id = $1";
 const deleteSupervisorQuery = "DELETE FROM supervisors WHERE user_id = $1";
 const updateUserQuery = "UPDATE users SET username = $2, password = $3, role = $4  WHERE user_id = $1"
@@ -75,6 +76,7 @@ const Queries = {
     addInternQuery: addInternQuery,
     deleteInternQuery: deleteInternQuery ,
     updateInternQuery: updateInternQuery,
+    getInternByUsernameQuery: getInternByUsernameQuery,
 
     getTeamsQuery: getTeamsQuery,
     getTeamByIdQuery: getTeamByIdQuery,

@@ -22,7 +22,10 @@ const getNotifications = async (req, res) => {
     try {
         const notifications = await generateNotifications(req.role, parseInt(req.params.user_id));
 
-        return res.status(200).json(notifications);
+        if(notifications) {
+            return res.status(200).json(notifications);
+        }
+        return res.status(200).json([])
 
     } catch (error) {
         return res.sendStatus(500);
@@ -35,10 +38,6 @@ const generateNotifications = async (role: number, user_id: number) => {
 
     try {
         
-
-    const time = dayjs().unix();
-    await pool.query(Queries.deleteOldNotificationsQuery, [time]);
-
     if(role === 5150) {
 
         const applicationsResponse = await pool.query(Queries.getApplicationsQuery);
@@ -137,6 +136,7 @@ const generateNotifications = async (role: number, user_id: number) => {
 
 
     }
+
 
 
     } catch (error) {

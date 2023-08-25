@@ -256,9 +256,10 @@ async function sendPasswordEmail(internEmail, username,  password) {
         return;
     }
     try {
-        await pool.query(Queries.deleteInternQuery, [intern.intern_id]);
-  
-        await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]);
+        await pool.query(Queries.deleteInternQuery, [intern.intern_id]); //Delete intern
+        await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]); //Delete user
+        await pool.query(Queries.deleteAssignmentsQuery, [intern.intern_id]); //Delete Assignments
+        await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendacne
 
         console.log(intern.id_no + " is deleted");
         
@@ -270,10 +271,25 @@ async function sendPasswordEmail(internEmail, username,  password) {
   const deleteApplication = async (req, res) => {
 
     const application_id = req.params.application_id;
-    console.log("burası",application_id);
-
+    
     try {
+
+        const applicationResponse = await pool.query("SELECT * FROM applications WHERE application_id = $1", [application_id]);
+        const application: Intern = applicationResponse.rows[0];
+
+        if(!application) {
+            return res.sendStatus(404); //Application not found
+        }
+
+        const internResponse = await pool.query("SELECT * FROM interns WHERE id_no = $1", [application.id_no]);
+        const intern: Intern = internResponse.rows[0];
+
+        if(intern) {
+            return res.sendStatus(403); //Forbidden
+        }
+
         await pool.query(Queries.deleteApplicationQuery, [application_id]);
+
         return res.sendStatus(200);
     } catch (error) {
         console.log(error);

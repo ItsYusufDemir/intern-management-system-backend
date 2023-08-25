@@ -50,14 +50,12 @@ export const handleSchedule = async () => {
         return;
     }
     try {
-        
-        await pool.query(Queries.deleteInternQuery, [intern.intern_id]);
-        
-        const username = intern.first_name + "." + intern.last_name;
-  
-        await pool.query("DELETE FROM users WHERE username = $1", [username]);
+        await pool.query(Queries.deleteInternQuery, [intern.intern_id]); //Delete intern
+        await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]); //Delete user
+        await pool.query(Queries.deleteAssignmentsQuery, [intern.intern_id]); //Delete Assignments
+        await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendacne
 
-        console.log(username + " is deleted");
+        console.log(intern.id_no + " is deleted");
         
     } catch (error) {
         console.log("Error happened while deleting scheduled intern");

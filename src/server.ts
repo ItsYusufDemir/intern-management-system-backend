@@ -99,10 +99,10 @@ app.use(verifyJWT);
 
 
 //Interns Router
-app.use("/api/interns", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), internsRoute);
+app.use("/api/interns", internsRoute);
 
 //Assignment Router
-app.use("/api/assignments", verifyRole(ROLES_LIST.Supervisor, ROLES_LIST.Admin), AssignmentRouter);
+app.use("/api/assignments", AssignmentRouter);
 
 //Register: post /user
 app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
@@ -111,7 +111,7 @@ app.use("/api/users", verifyRole(ROLES_LIST.Admin), userRouter);
 app.use("/api/applications", verifyRole(ROLES_LIST.Admin), ApplicationRouter);
 
 //Attendance Router
-app.use("/api/attendances", verifyRole(ROLES_LIST.Admin, ROLES_LIST.Supervisor), AttendanceRouter);
+app.use("/api/attendances", AttendanceRouter);
 
 //Notifications Router
 app.use("/api/notifications", NotificationRouter)

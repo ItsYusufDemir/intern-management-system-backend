@@ -10,31 +10,61 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-const getIntern = (req, res) =>{
-    pool.query(Queries.getInternsQuery, (err, results) => {
-        if(err) throw err;
-        res.status(200).json(results.rows);
-    })
+const getInterns = async (req, res) =>{
+
+    try {
+        if(req.role === 5150) {
+            const response = await pool.query(Queries.getInternsQuery)
+            return res.status(200).json(response.rows);
+        }
+        else {
+
+            const response = await pool.query("SELECT team_id FROM supervisors WHERE user_id = $1", [req.user_id]);
+            const team_idObject = response.rows[0];
+
+            if(team_idObject) {
+                console.log(team_idObject.team_id);
+
+                const internsResponse = await pool.query("SELECT * FROM interns WHERE team_id = $1", [team_idObject.team_id]);
+
+                console.log(internsResponse.rows);
+                return res.status(200).json(internsResponse.rows);
+            }
+
+            return res.status(200).json([]);
+  
+            
+        }
+
+    
+
+    
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+
+    
 }
 
-const getInternById = (req, res) =>{
-    const id = req.params.id;
+const getInternByUsername = async (req, res) =>{
+    const username = req.params.username;
+    console.log(username);
     
-    pool.query(Queries.getInternByIdQuery, [id], (err, results) => {
-        if(err){
-            console.log("Intern could not found");
-            res.end();
+    try {
+        const internResponse = await pool.query(Queries.getInternByUsernameQuery, [username]);
+        const intern = internResponse.rows[0];
+
+        if(!intern) {
+            return res.sendStatus(404);
         }
-        else{
-            if(results.rows.length == 0){
-                console.log("Intern does not exist with id: " + id);
-                res.send("Intern does not exist with id: " + id);
-            }
-            else{
-                res.status(200).json(results.rows);
-            }
-        }
-    })
+
+        return res.status(200).json(intern);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+    
     
 }
 
@@ -247,8 +277,8 @@ const deleteInternManually = async (intern: Intern) => {
 
 
 const InternController = {
-    getIntern: getIntern,
-    getInternById: getInternById,
+    getInterns: getInterns,
+    getInternByUsername: getInternByUsername,
     addIntern: addIntern,
     deleteIntern: deleteIntern,
     updateIntern: updateIntern
