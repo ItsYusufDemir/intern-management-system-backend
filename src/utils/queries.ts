@@ -62,12 +62,12 @@ const getAttendancesForInternQuery = "SELECT * FROM attendances WHERE intern_id 
 const deleteAttendancesQuery = "DELETE FROM attendances WHERE intern_id = $1";
 
 //Notifications Queirs
-const getNotificationsQuery = "SELECT * FROM notifications";
-const addNotificationsQuery = "INSERT INTO notifications (user_id, type_code, content, timestamp, is_seen) " + 
-"VALUES ($1, $2, $3, $4, $5)";
+const getNotificationsQuery = "SELECT * FROM notifications WHERE user_id = $1";
+const addNotificationsQuery = "INSERT INTO notifications (user_id, type_code, intern_id, notification_date, content, timestamp, is_seen) " + 
+"VALUES ($1, $2, $3, $4, $5, $6, $7)";
 const handleSeenquery = "UPDATE notifications SET is_seen = true WHERE user_id = $1"
 const deleteOldNotificationsQuery = "DELETE FROM notifications WHERE timestamp < $1";
-const updateNotificationQuery = "UPDATE notifications SET user_id = $1, type_code = $2, content = $3, timestamp = $4, is_seen = $5 WHERE notification_id = $6";
+const updateNotificationQuery = "UPDATE notifications SET user_id = $1, type_code = $2, intern_id = $3, notification_date = $4, content = $5, timestamp = $6, is_seen = $7 WHERE notification_id = $8";
 
 const Queries = {
     getInternsQuery: getInternsQuery ,

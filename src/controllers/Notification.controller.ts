@@ -10,6 +10,7 @@ import { time } from "console";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import cron from "node-cron";
+import { Assignment } from "../utils/Assignment.js";
 
 
 const getNotifications = async (req, res) => {
@@ -20,7 +21,7 @@ const getNotifications = async (req, res) => {
     }
     
     try {
-        const notifications = await generateNotifications(req.role, parseInt(req.params.user_id));
+        const notifications = await generateNotifications(req.role, parseInt(req.params.user_id), req.user);
 
         if(notifications) {
             return res.status(200).json(notifications);
@@ -34,108 +35,222 @@ const getNotifications = async (req, res) => {
 }
 
 
-const generateNotifications = async (role: number, user_id: number) => {
+const generateNotifications = async (role: number, user_id: number, username: string) => {
 
     try {
-        
-    if(role === 5150) {
 
-        const applicationsResponse = await pool.query(Queries.getApplicationsQuery);
-        const internsResponse = await pool.query(Queries.getInternsQuery);
-
-        const applications = applicationsResponse.rows;
-        const interns = internsResponse.rows;
-
-
+        const notificationsResponse = await pool.query(Queries.getNotificationsQuery,[user_id]);
+        var oldNotifications: Notification [] = notificationsResponse.rows;
         const newNotifications: Notification [] = [];
+            
+        if(role === 5150) {
 
-        const numberOfWaitingApplications = applications?.filter((application: Intern) => application.application_status === "waiting").length;
-        if(numberOfWaitingApplications) {
-            const content = `You have ${numberOfWaitingApplications} waiting application(s)`;
-            const newNotification: Notification = {
-                user_id: user_id,
-                type_code: 3, //waiting application
-                content: content,
-                timestamp: dayjs().unix(),
-                is_seen: false,
-            }
-            newNotifications.push(newNotification);
-        }
+            const applicationsResponse = await pool.query(Queries.getApplicationsQuery);
+            const internsResponse = await pool.query(Queries.getInternsQuery);
 
-        const endingInternships = interns?.filter(intern =>
-            intern.internship_ending_date - dayjs().unix() < 60 * 60 * 24 * 6 //if the internship is going to end in 6 days
-        );
+            const applications = applicationsResponse.rows;
+            const interns = internsResponse.rows;
 
-    
-        if(endingInternships) {
-            endingInternships.map(endingInternship => {
-                const name = endingInternship.first_name + " " + endingInternship.last_name;
 
-                const content = `${name}'s internship will end on `
-                const timestamp = endingInternship.internship_ending_date;
+            
 
+            const numberOfWaitingApplications = applications?.filter((application: Intern) => application.application_status === "waiting").length;
+            if(numberOfWaitingApplications) {
+                const content = `You have ${numberOfWaitingApplications} waiting application(s)`;
                 const newNotification: Notification = {
                     user_id: user_id,
-                    type_code: 2, //ending internship
+                    type_code: 3, //waiting application
                     content: content,
-                    timestamp: timestamp,
+                    notification_date: dayjs().unix(),
                     is_seen: false,
                 }
                 newNotifications.push(newNotification);
-            })
-        }
+            }
 
-        //We cancel storing the noticiation in the database
-        /*
-        const notificationsResponse = await pool.query(Queries.getNotificationsQuery);
-        const oldNotifications: Notification [] = notificationsResponse.rows;
+            const endingInternships = interns?.filter(intern =>
+                intern.internship_ending_date - dayjs().unix() < 60 * 60 * 24 * 6 //if the internship is going to end in 6 days
+            );
+
+        
+            if(endingInternships) {
+                endingInternships.map(endingInternship => {
+                    const name = endingInternship.first_name + " " + endingInternship.last_name;
+
+                    const content = `${name}'s internship will end on `
+                    const timestamp = endingInternship.internship_ending_date;
+
+                    const newNotification: Notification = {
+                        user_id: user_id,
+                        type_code: 2, //ending internship
+                        intern_id: endingInternship.intern_id,
+                        content: content,
+                        timestamp: timestamp,
+                        notification_date: dayjs().unix(),
+                        is_seen: false,
+                    }
+                    newNotifications.push(newNotification);
+                })
+            }
+
+            if(numberOfWaitingApplications === 0) { //Delete the old waiting application notification not to confuse the user
+                const garbage = oldNotifications.find(oldNotification => oldNotification.type_code === 3);
+
+                if(garbage) {
+                    oldNotifications = oldNotifications.filter(oldNotification => oldNotification.notification_id !== garbage.notification_id);
+                    await pool.query("DELETE FROM notifications WHERE user_id = $1 AND type_code = 3", [user_id]);
+                }
+            }
+
+
+
+        } else if (role === 1984) {
+
+            const team_idResponse = await pool.query("SELECT * FROM supervisors WHERE user_id = $1", [user_id]);
+            const team_id = team_idResponse?.rows[0]?.team_id;
+
+            if(team_id) {
+                const internsResponse = await pool.query("SELECT * FROM interns WHERE team_id = $1", [team_id]);
+                const interns = internsResponse.rows;
+
+                const endingInternships = interns?.filter(intern =>
+                    intern.internship_ending_date - dayjs().unix() < 60 * 60 * 24 * 6 //if the internship is going to end in 6 days
+                );
+    
+            
+                if(endingInternships) {
+                    endingInternships.map(endingInternship => {
+                        const name = endingInternship.first_name + " " + endingInternship.last_name;
+    
+                        const content = `${name}'s internship will end on `
+                        const timestamp = endingInternship.internship_ending_date;
+    
+                        const newNotification: Notification = {
+                            user_id: user_id,
+                            type_code: 2, //ending internship
+                            intern_id: endingInternship.intern_id,
+                            content: content,
+                            timestamp: timestamp,
+                            notification_date: dayjs().unix(),
+                            is_seen: false,
+                        }
+                        newNotifications.push(newNotification);
+                    })
+                }
+
+
+                const startingInternships = interns?.filter(intern =>
+                    intern.internship_starting_date - dayjs().unix() > 60 * 60 * 24 * 6 //if the internship is going to end in 6 days
+                );
+    
+            
+                if(startingInternships) {
+                    startingInternships.map(startingInternship => {
+                        const name = startingInternship.first_name + " " + startingInternship.last_name;
+    
+                        const content = `${name}'s internship will start on `
+                        const timestamp = startingInternship.internship_starting_date;
+    
+                        const newNotification: Notification = {
+                            user_id: user_id,
+                            type_code: 2, //ending internship
+                            intern_id: startingInternship.intern_id,
+                            content: content,
+                            timestamp: timestamp,
+                            notification_date: dayjs().unix(),
+                            is_seen: false,
+                        }
+                        newNotifications.push(newNotification);
+                    }) 
+
+                    
+                    
+                }
+            }
+
+
+
+        } else if (role === 2001) {
+
+            const internResponse = await pool.query("SELECT * FROM interns WHERE id_no = $1", [username]);
+            const intern: Intern = internResponse.rows[0];
+
+            const assignmentsResponse = await pool.query(Queries.getAssignmentsByInternIdQuery, [intern.intern_id]);
+            const assignments: Assignment [] = assignmentsResponse.rows;
+
+            if(assignments.length !== 0) {
+                const numberOfWaitingAssignments = assignments.filter(assignment => !assignment.complete).length;
+
+                if(numberOfWaitingAssignments !== 0) {
+                    const content = `You have ${numberOfWaitingAssignments} waiting assignment(s)`;
+
+                    const newNotification: Notification = {
+                        user_id: user_id,
+                        type_code: 4, //waiting assignments
+                        intern_id: intern.intern_id,
+                        content: content,
+                        notification_date: dayjs().unix(),
+                        is_seen: false,
+                    }
+                    newNotifications.push(newNotification);
+                }
+                
+            } else {
+                await pool.query("DELETE FROM notifications WHERE user_id $1 AND type_code = $2", [user_id, 4]);
+            }
+
+        }
 
 
         await Promise.all(newNotifications.map(async notification => {
 
-            const duplicate = oldNotifications?.filter(oldNotification => oldNotification.user_id === notification.user_id && oldNotification.type_code === notification.type_code);
+            const duplicate = oldNotifications?.filter(oldNotification => oldNotification.user_id == notification.user_id && oldNotification.type_code == notification.type_code && oldNotification.intern_id == notification.intern_id);
+
 
             if(duplicate.length === 0) {
-                await pool.query(Queries.addNotificationsQuery, [notification.user_id, notification.type_code, notification.content, notification.timestamp, false])
+                await pool.query(Queries.addNotificationsQuery, [notification.user_id, notification.type_code, notification.intern_id, notification.notification_date, notification.content, notification.timestamp, false])
                 oldNotifications.push(notification);
-            } else { //update the notification <if there is a difference>
+            } else { //update the notification if there is a difference>
 
-                const notificationToUpdate = oldNotifications.find(oldNotification => oldNotification.user_id === notification.user_id && oldNotification.type_code === notification.type_code && oldNotification.content !== notification.content);
-   
+                
+                const notificationToUpdate = oldNotifications.find(oldNotification => (oldNotification.user_id === notification.user_id && oldNotification.type_code === notification.type_code 
+                    && oldNotification?.intern_id == notification?.intern_id && oldNotification.content !== notification.content));
+                
+                oldNotifications.map(oldNotification => {
+                    console.log(oldNotification.user_id === notification.user_id && oldNotification.type_code === notification.type_code 
+                        && oldNotification?.intern_id == notification?.intern_id && oldNotification.content !== notification.content)
+                    console.log(oldNotification.user_id, notification.user_id);
+                    console.log(oldNotification.type_code, notification.type_code);
+                    console.log(oldNotification.intern_id, notification.intern_id);
+                    console.log(oldNotification.content, notification.content);
+                })
 
                 if(notificationToUpdate) {
 
                     try {
-                        await pool.query(Queries.updateNotificationQuery, [notification.user_id, notification.type_code, notification.content, notification.timestamp, false, notificationToUpdate.notification_id])
+                        await pool.query(Queries.updateNotificationQuery, [notification.user_id, notification.type_code, notification.intern_id, notification.notification_date, notification.content, notification.timestamp, false, notificationToUpdate.notification_id])
 
                     } catch (error) {
                         console.log(error);
                     }
-                    console.log("burada sorun var", notification);
 
                     notificationToUpdate.user_id = notification.user_id;
                     notificationToUpdate.type_code = notification.type_code;
+                    notificationToUpdate.intern_id = notification.intern_id;
                     notificationToUpdate.content = notification.content;
+                    notificationToUpdate.notification_date = notification.notification_date;
                     notificationToUpdate.timestamp = notification.timestamp;
                     notificationToUpdate.is_seen = false;
                 }
             }
 
         }));
-        */
 
 
-        const sorted = await newNotifications.slice().sort((a,b) => a.timestamp - b.timestamp);
+        oldNotifications.filter(oldNotification => oldNotification.is_seen === false || oldNotification.timestamp < dayjs().add(7, "day").unix())
 
-        return sorted;
+        const sortedNotifications = oldNotifications.sort(sortByUnseenFirst);
 
-    } else if (role === 1984) {
-
-
-    } else if (role === 2001) {
-
-
-    }
+        return sortedNotifications;
 
 
 
@@ -147,6 +262,17 @@ const generateNotifications = async (role: number, user_id: number) => {
 
     
 }
+
+function sortByUnseenFirst(a: Notification, b: Notification) {
+    // Sort unseen notifications first
+    if (!a.is_seen && b.is_seen) {
+      return -1;
+    } else if (a.is_seen && !b.is_seen) {
+      return 1;
+    }
+    // Sort by notification_date if both are seen or both are unseen
+    return dayjs(b.notification_date).diff(a.notification_date);
+  }
 
 
 const handleSeen = async (req, res) => {
