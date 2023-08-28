@@ -23,11 +23,9 @@ const getInterns = async (req, res) =>{
             const team_idObject = response.rows[0];
 
             if(team_idObject) {
-                console.log(team_idObject.team_id);
 
                 const internsResponse = await pool.query("SELECT * FROM interns WHERE team_id = $1", [team_idObject.team_id]);
 
-                console.log(internsResponse.rows);
                 return res.status(200).json(internsResponse.rows);
             }
 

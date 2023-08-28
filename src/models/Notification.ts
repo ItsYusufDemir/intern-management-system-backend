@@ -1,9 +1,11 @@
 export interface Notification  {
     notification_id?: number,
     user_id: number,
+    intern_id?: number,
+    notification_date: number,
     type_code: number,
     content: string,
-    timestamp: number,
+    timestamp?: number,
     is_seen: boolean,
 }
 
@@ -12,4 +14,5 @@ export interface Notification  {
 birthday: 1
 internship ending: 2
 waiting applications: 3
+waiting assignments: 4
 */
