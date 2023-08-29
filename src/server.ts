@@ -22,6 +22,7 @@ import compression from "compression";
 import AttendanceRouter from "./routes/AttendanceRouter.js";
 import NotificationRouter from "./routes/NotificationRouter.js";
 import { handleSchedule } from "./utils/Schedule.js";
+import DocumentRequestRouter from "./routes/DocumentRequestRouter.js";
 
 const app = express();
 
@@ -115,6 +116,9 @@ app.use("/api/attendances", AttendanceRouter);
 
 //Notifications Router
 app.use("/api/notifications", NotificationRouter)
+
+//Document Requests Router
+app.use("/api/document-requests", DocumentRequestRouter)
 
 //Invalid Router
 app.use((req, res) => {

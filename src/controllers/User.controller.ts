@@ -82,6 +82,12 @@ const login = async (req, res) => {
                 const team_idResponse = await pool.query("SELECT * FROM supervisors WHERE user_id = $1", [user_id]);
                 const team_id = team_idResponse.rows[0]?.team_id;
 
+                let intern_id;
+                if(role === 2001) {
+                    const intern_idResponse = await pool.query("SELECT intern_id FROM interns WHERE id_no = $1", [username])
+                    intern_id = intern_idResponse.rows[0].intern_id;
+                }
+
                 const accessToken = jsonwebtoken.sign(
                     { 
                         "UserInfo": {
@@ -105,7 +111,7 @@ const login = async (req, res) => {
 
                 console.log("User logged in");
                 res.cookie('jwt', refreshToken, {httpOnly: true, maxAge: 24 * 60 * 60 * 1000}); //maxAge: 1 day
-                res.json({accessToken, role, user_id, team_id});
+                res.json({accessToken, role, user_id, team_id, intern_id});
             }
             else{
                 res.sendStatus(401);
@@ -146,6 +152,11 @@ const hadnleRefreshToken = async (req, res) => {
         const username = user.username;
         const team_id = user.team_id;
 
+        let intern_id;
+        if(role === 2001) {
+            const intern_idResponse = await pool.query("SELECT intern_id FROM interns WHERE id_no = $1", [username])
+            intern_id = intern_idResponse.rows[0].intern_id;
+        }
             
         jsonwebtoken.verify(
             refreshToken,
@@ -166,7 +177,7 @@ const hadnleRefreshToken = async (req, res) => {
                     {'expiresIn': '15m'}
 
                 );
-                return res.json({accessToken, role,username, user_id, team_id});
+                return res.json({accessToken, role,username, user_id, team_id, intern_id});
             }
         )
         

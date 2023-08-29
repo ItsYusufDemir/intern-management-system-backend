@@ -53,7 +53,9 @@ export const handleSchedule = async () => {
         await pool.query(Queries.deleteInternQuery, [intern.intern_id]); //Delete intern
         await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]); //Delete user
         await pool.query(Queries.deleteAssignmentsQuery, [intern.intern_id]); //Delete Assignments
-        await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendacne
+        await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendance
+        await pool.query("DELETE FROM documents WHERE intern_id = $1", [intern.intern_id]); //Delete Documents
+
 
         console.log(intern.id_no + " is deleted");
         

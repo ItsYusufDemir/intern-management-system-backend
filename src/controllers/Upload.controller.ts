@@ -3,6 +3,7 @@ import fs from "fs";
 import { fileURLToPath } from 'url';
 import {v4 as uuidvv4 } from "uuid";
 import { get } from "http";
+import pool from "../utils/database.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,7 +11,6 @@ const uploadDir = path.resolve(__dirname, '..', "uploads"); //The path of the up
 
 
 const uploadPhoto = (req, res) => {
-
 
     if (!req.files || Object.keys(req.files).length === 0) {
         console.log("No photo uploaded");
@@ -68,6 +68,96 @@ const uploadCV = (req, res) => {
         return res.json({cv_url});
     })
 
+}
+
+
+const uploadDocument = async (req, res) => {
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+        console.log("No file uploaded");
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const document = req.files.file;
+    const document_info = JSON.parse(req.body.document_info);
+    console.log(document_info);
+
+    const uploadDir = path.resolve(__dirname, '..', "uploads/documents");
+
+    const extension = document.name.split('.').pop();
+    const uniqueFilename = uuidvv4() + "." + extension;
+
+    
+    const imagePath = path.join(uploadDir, uniqueFilename);
+
+
+
+    document.mv(imagePath, async (error) => {
+        if(error) {
+            console.log("Error uploading CV");
+            return res.status(500).json({message: "Error uploading CV"});
+        }
+
+        const document_url = "http://localhost:5000/uploads/documents/" + uniqueFilename;
+        const document_name = document_info.document_name;
+        const intern_id = document_info.intern_id;
+
+        console.log("burası", document_info.intern_id);
+        
+        await pool.query("INSERT INTO documents (document_name, intern_id, document_url) VALUES ($1, $2, $3)", [document_name, intern_id, document_url])
+
+        return res.status(200).json({document_url})
+    })
+
+}
+
+const deleteDocument = async (req, res) => {
+
+    const fileName = req.params.fileName;
+
+    const url = "http://localhost:5000/uploads/documents/" + fileName;
+    const filePath = path.join(uploadDir,"documents/", fileName);
+
+    try {
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+            if(err) {
+                console.log("Documents not found");
+                return res.status(404).json({ message: "Documents not found" });
+            }
+            else{
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                      console.error("Error deleting document");
+                      return res.status(500).json({ message: "Error deleting document"});
+                    }
+                  
+                    res.json({ message: "Document deleted successfully" });
+                });
+            }
+            
+        });
+    
+        //Delete from database
+        console.log("url",url);
+        await pool.query("DELETE FROM documents WHERE document_url = $1", [url]);
+    } catch (error) {
+        return res.sendStatus(500);
+    }
+
+    
+}
+
+const getDocument = (req, res) => {
+    const documentName = req.params.id;
+
+    const documentPath = path.join(uploadDir, ("documents/" + documentName));
+
+    if(!fs.existsSync(documentPath)){
+        console.log("Document not found");
+        res.status(404).json({message: "Document not found"});
+    }
+
+    res.sendFile(documentPath);
 }
 
 const getPhoto = (req, res) => {
@@ -193,6 +283,9 @@ const UploadController = {
     deleteCv: deleteCv,
     deletePhoto: deletePhoto,
     deleteFromGarbage: deleteFromGarbage,
+    uploadDocument: uploadDocument,
+    deleteDocument: deleteDocument,
+    getDocument: getDocument,
 }
 
 export default UploadController;

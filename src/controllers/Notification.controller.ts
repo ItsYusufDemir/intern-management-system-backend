@@ -52,8 +52,6 @@ const generateNotifications = async (role: number, user_id: number, username: st
             const interns = internsResponse.rows;
 
 
-            
-
             const numberOfWaitingApplications = applications?.filter((application: Intern) => application.application_status === "waiting").length;
             if(numberOfWaitingApplications) {
                 const content = `You have ${numberOfWaitingApplications} waiting application(s)`;
@@ -215,14 +213,6 @@ const generateNotifications = async (role: number, user_id: number, username: st
                 const notificationToUpdate = oldNotifications.find(oldNotification => (oldNotification.user_id === notification.user_id && oldNotification.type_code === notification.type_code 
                     && oldNotification?.intern_id == notification?.intern_id && oldNotification.content !== notification.content));
                 
-                oldNotifications.map(oldNotification => {
-                    console.log(oldNotification.user_id === notification.user_id && oldNotification.type_code === notification.type_code 
-                        && oldNotification?.intern_id == notification?.intern_id && oldNotification.content !== notification.content)
-                    console.log(oldNotification.user_id, notification.user_id);
-                    console.log(oldNotification.type_code, notification.type_code);
-                    console.log(oldNotification.intern_id, notification.intern_id);
-                    console.log(oldNotification.content, notification.content);
-                })
 
                 if(notificationToUpdate) {
 

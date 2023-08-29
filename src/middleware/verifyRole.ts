@@ -5,7 +5,10 @@ const verifyRole = (...allowedRoles) => {
         const rolesArray = [...allowedRoles];
     
         const result = rolesArray.includes(req.role);
-        if(!result) return res.sendStatus(401);
+        if(!result) {
+            console.log("Unauthorized role!")
+            return res.sendStatus(401);
+        }
         next();
     }
 }

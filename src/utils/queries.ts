@@ -69,6 +69,10 @@ const handleSeenquery = "UPDATE notifications SET is_seen = true WHERE user_id =
 const deleteOldNotificationsQuery = "DELETE FROM notifications WHERE timestamp < $1";
 const updateNotificationQuery = "UPDATE notifications SET user_id = $1, type_code = $2, intern_id = $3, notification_date = $4, content = $5, timestamp = $6, is_seen = $7 WHERE notification_id = $8";
 
+//Documents Queies
+const getDocumentsQuery = "SELECT * FROM documents WHERE intern_id = $1";
+
+
 const Queries = {
     getInternsQuery: getInternsQuery ,
     getInternByIdQuery: getInternByIdQuery,
@@ -122,6 +126,8 @@ const Queries = {
     handleSeenquery: handleSeenquery,
     deleteOldNotificationsQuery: deleteOldNotificationsQuery,
     updateNotificationQuery: updateNotificationQuery,
+
+    getDocumentsQuery: getDocumentsQuery,
 }
 
 export default Queries;
