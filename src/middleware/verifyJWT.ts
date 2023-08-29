@@ -27,13 +27,13 @@ const verifyJWT = (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET,
         (err, decoded) => {
             if(err){
-                console.log("Izin verilmedi");
+                console.log("Access Denied");
                  return res.sendStatus(403); //Invalid token
             }
             req.user = decoded.UserInfo.username;
             req.role = decoded.UserInfo.role;
             req.user_id = decoded.UserInfo.user_id
-            console.log("izin verildi");
+            console.log("Access Granted");
             next();
         }
     );

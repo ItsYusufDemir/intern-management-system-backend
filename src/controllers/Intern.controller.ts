@@ -140,10 +140,9 @@ const deleteIntern = async (req, res) => {
         const intern: Intern = result.rows[0];
 
         await pool.query(Queries.deleteAttendancesQuery, [id]);
-
         await pool.query(Queries.deleteAssignmentsQuery, [id]);
-
         await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]);
+        await pool.query("DELETE FROM documents WHERE intern_id = $1", [intern.intern_id]);
 
         //Delete the schedule
         schedule.cancelJob(intern.id_no);
@@ -259,16 +258,31 @@ const deleteInternManually = async (intern: Intern) => {
     }
     try {
         
-        await pool.query(Queries.deleteInternQuery, [intern.intern_id]);
-        
-        const username = intern.first_name + "." + intern.last_name;
-  
-        await pool.query("DELETE FROM users WHERE username = $1", [username]);
+        await pool.query(Queries.deleteInternQuery, [intern.intern_id]);  //Delete Intern
+        await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]); //Delete User
+        await pool.query(Queries.deleteAssignmentsQuery, [intern.intern_id]); //Delete Assignments
+        await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendance
+        await pool.query("DELETE FROM documents WHERE intern_id = $1", [intern.intern_id]); //Delete Documents
 
-        console.log(username + " is deleted");
+
+        console.log(intern.id_no + " is deleted");
         
     } catch (error) {
         console.log("Error happened while deleting scheduled intern");
+    }
+  }
+
+  const getDocuments = async (req, res) => {
+    const intern_id = req.params.intern_id;
+
+    try {
+        const documentsResponse = await pool.query(Queries.getDocumentsQuery, [intern_id]);
+        const documents = documentsResponse.rows;
+
+        return res.status(200).json(documents);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
     }
   }
 
@@ -279,7 +293,8 @@ const InternController = {
     getInternByUsername: getInternByUsername,
     addIntern: addIntern,
     deleteIntern: deleteIntern,
-    updateIntern: updateIntern
+    updateIntern: updateIntern,
+    getDocuments: getDocuments,
 }
 
 export default InternController;

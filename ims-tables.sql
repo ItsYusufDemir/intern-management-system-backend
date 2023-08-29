@@ -20,6 +20,19 @@ CREATE TABLE applications (
     overall_success INTEGER
 );
 
+CREATE TABLE document_requests (
+  id BIGSERIAL NOT NULL PRIMARY KEY,
+  document_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE documents (
+  document_id BIGSERIAL NOT NULL PRIMARY KEY,
+  document_name VARCHAR(50) NOT NULL,
+  intern_id INTEGER NOT NULL,
+  document_url VARCHAR(500) NOT NULL
+);
+
+
 CREATE TABLE notifications (
   notification_id BIGSERIAL NOT NULL PRIMARY KEY,
   user_id INTEGER NOT NULL,
