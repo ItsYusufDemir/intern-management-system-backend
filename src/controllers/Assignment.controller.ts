@@ -88,11 +88,27 @@ const deleteAssignment = async (req, res) => {
 
         await pool.query("UPDATE interns SET overall_success = $1 WHERE intern_id = $2", [overall_success, intern_id]);
 
+        
         return res.sendStatus(200);
     } catch (error) {
         console.log(error);
         return res.status(500).json({'message': error.message});
     }
+}
+
+const markDone = async (req, res) => {
+
+    const assignment_id = req.params.assignment_id;
+
+    try {
+        await pool.query("UPDATE assignments SET complete = $1 WHERE assignment_id = $2", [true, assignment_id]);
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+
 }
 
 
@@ -108,6 +124,7 @@ const AssignmentController = {
     updateAssignment: updateAssignment,
     getAssignmentsForIntern: getAssignmentsForIntern,
     deleteAssignment: deleteAssignment,
+    markDone: markDone
 }
 
 export default AssignmentController;

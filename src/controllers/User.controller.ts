@@ -150,7 +150,9 @@ const hadnleRefreshToken = async (req, res) => {
         const user_id = user.user_id;
         const role = user.role;
         const username = user.username;
-        const team_id = user.team_id;
+        
+        const team_idResponse = await pool.query("SELECT * FROM supervisors WHERE user_id = $1", [user_id]);
+        const team_id = team_idResponse.rows[0]?.team_id;
 
         let intern_id;
         if(role === 2001) {
