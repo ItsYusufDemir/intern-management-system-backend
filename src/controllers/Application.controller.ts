@@ -227,7 +227,7 @@ async function sendPasswordEmail(internEmail, username,  password) {
     }
   }
 
-  const deleteFile = (fileName: string, type: "cv" | "photos") => {
+  const deleteFile = (fileName: string, type: "cv" | "photos" | "documents") => {
 
     if(!fileName) {
         return;
@@ -260,6 +260,14 @@ async function sendPasswordEmail(internEmail, username,  password) {
         await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]); //Delete user
         await pool.query(Queries.deleteAssignmentsQuery, [intern.intern_id]); //Delete Assignments
         await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendacne
+        const document_urlsResponse = await pool.query("DELETE FROM documents WHERE intern_id = $1 RETURNING document_url", [intern.intern_id]);
+        const document_urls = document_urlsResponse.rows;
+
+        document_urls.map(document_urlObject => {
+            console.log(document_urlObject?.document_url?.split("/").pop());
+            deleteFile(document_urlObject?.document_url?.split("/").pop(), "documents");
+        })
+        
 
         console.log(intern.id_no + " is deleted");
         
@@ -289,6 +297,12 @@ async function sendPasswordEmail(internEmail, username,  password) {
         }
 
         await pool.query(Queries.deleteApplicationQuery, [application_id]);
+
+        const cvName = application?.cv_url?.split("/").pop();
+        const photoName = application?.photo_url?.split("/").pop();
+
+        deleteFile(cvName, "cv");
+        deleteFile(photoName, "photos");
 
         return res.sendStatus(200);
     } catch (error) {

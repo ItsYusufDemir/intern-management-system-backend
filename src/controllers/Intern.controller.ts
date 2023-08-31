@@ -8,6 +8,7 @@ import schedule from "node-schedule";
 import dayjs from "dayjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const uploadDir = path.resolve(__dirname, '..', "uploads");
 
 
 const getInterns = async (req, res) =>{
@@ -142,7 +143,15 @@ const deleteIntern = async (req, res) => {
         await pool.query(Queries.deleteAttendancesQuery, [id]);
         await pool.query(Queries.deleteAssignmentsQuery, [id]);
         await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]);
-        await pool.query("DELETE FROM documents WHERE intern_id = $1", [intern.intern_id]);
+        const document_urlsResponse = await pool.query("DELETE FROM documents WHERE intern_id = $1 RETURNING document_url", [intern.intern_id]);
+        const document_urls = document_urlsResponse.rows;
+
+        document_urls.map(document_urlObject => {
+            console.log(document_urlObject?.document_url?.split("/").pop());
+            deleteFile(document_urlObject?.document_url?.split("/").pop(), "documents");
+        })
+
+
 
         //Delete the schedule
         schedule.cancelJob(intern.id_no);
@@ -262,7 +271,13 @@ const deleteInternManually = async (intern: Intern) => {
         await pool.query("DELETE FROM users WHERE username = $1", [intern.id_no]); //Delete User
         await pool.query(Queries.deleteAssignmentsQuery, [intern.intern_id]); //Delete Assignments
         await pool.query(Queries.deleteAttendancesQuery, [intern.intern_id]); //Delete Attendance
-        await pool.query("DELETE FROM documents WHERE intern_id = $1", [intern.intern_id]); //Delete Documents
+        const document_urlsResponse = await pool.query("DELETE FROM documents WHERE intern_id = $1 RETURNING document_url", [intern.intern_id]);
+        const document_urls = document_urlsResponse.rows;
+
+        document_urls.map(document_urlObject => {
+            console.log(document_urlObject?.document_url?.split("/").pop());
+            deleteFile(document_urlObject?.document_url?.split("/").pop(), "documents");
+        })
 
 
         console.log(intern.id_no + " is deleted");
@@ -284,6 +299,29 @@ const deleteInternManually = async (intern: Intern) => {
         console.log(error);
         return res.sendStatus(500);
     }
+  }
+
+  const deleteFile = (fileName: string, type: "cv" | "photos" | "documents") => {
+
+    if(!fileName) {
+        return;
+    }
+
+    const filePath = path.join(uploadDir,`${type}/`, fileName);
+
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+        if(err) {
+            console.log("document not found");
+            return;
+        }
+        else{
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                  console.error("Error deleting document");
+                }
+            });
+        }
+    });
   }
 
 
