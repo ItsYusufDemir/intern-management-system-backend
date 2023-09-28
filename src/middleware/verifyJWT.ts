@@ -8,7 +8,7 @@ const verifyJWT = (req, res, next) => {
     let token: any;
     if(authHeader){ //access token is in the header of the req
         if(!authHeader?.startsWith("Bearer ")) {
-            console.log("izin verilmedi beraer ile başlamıyor")
+            console.log("Access Denied, No Bearer")
              return res.sendStatus(401);
         }
         token = authHeader.split(' ')[1];
@@ -17,7 +17,7 @@ const verifyJWT = (req, res, next) => {
         token = req.query.access_token;
     }
     else{
-        console.log("izin verilmedi authheader yok", req.headers);
+        console.log("Access Denied, No Autheader");
         return res.sendStatus(401); //There is no access token
     }
     
@@ -27,7 +27,7 @@ const verifyJWT = (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET,
         (err, decoded) => {
             if(err){
-                console.log("Access Denied");
+                console.log("Access Denied, Invalid Token");
                  return res.sendStatus(403); //Invalid token
             }
             req.user = decoded.UserInfo.username;

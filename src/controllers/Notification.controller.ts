@@ -236,12 +236,11 @@ const generateNotifications = async (role: number, user_id: number, username: st
         }));
 
 
-        oldNotifications.filter(oldNotification => oldNotification.is_seen === false || oldNotification.timestamp < dayjs().add(7, "day").unix())
+        oldNotifications = oldNotifications.filter(oldNotification => oldNotification.is_seen === false || oldNotification.notification_date > dayjs().subtract(7, "day").unix())
 
         const sortedNotifications = oldNotifications.sort(sortByUnseenFirst);
 
         return sortedNotifications;
-
 
 
     } catch (error) {

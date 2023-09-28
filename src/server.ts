@@ -33,10 +33,9 @@ app.use(express.raw({ limit: '50mb', type: 'application/octet-stream' }));
 app.use(fileUpload());
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000','http://localhost:3001','http://localhost:3002', "http://localhost", "http://85.31.236.188" ],
   credentials: true, // Allow sending cookies and other credentials
 };
-
 
 
 app.use(cookieParser()); //middleware for cookies
@@ -46,10 +45,12 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 
+
+
 //Print coming requests to the console
 app.use(morgan(function (tokens, req, res){
   return [
-    "\n",
+    "\n\n\n--------------------------New Request---------------------------\n",
     chalk.hex('#1946BD').bold(tokens.method(req, res)),
     chalk.hex("#3A5FE9")(tokens.url(req, res)),
     chalk.hex("#2ed573").bold(tokens.status(req, res)),
@@ -81,6 +82,7 @@ app.use("/refresh", loginRouter); //Refresh access token
 app.use("/logout", logout); //Logout
 app.use("/api/applications", apply); //Apply for internship
 
+
 /******************************SEMI PRIVATE ROUTES**************************/
 
 //Teams router
@@ -94,7 +96,6 @@ app.use("/uploads", uploadRouter);
 
 //Verify before accessing private routes
 app.use(verifyJWT);
-
 
 /******************************PRIVATE ROUTES***********************************/
 

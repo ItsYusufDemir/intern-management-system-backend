@@ -12,17 +12,17 @@ const __dirname = path.dirname(__filename);
 
 const addUser = async (req, res) => {
 
-    const {username, password, role, team_id} = req.body;
+    const {username, password, role, team_id, email} = req.body;
 
     try {
         const result = await pool.query(Queries.checkUserExistsQuery, [username]);
         if(result.rows.length) {
-            console.log("User is aldeady exists!");
+            console.log("User is already exists!");
             return res.status(409).json({'message': 'User is already exists!'}); //Conflict
         }
         else{
             const hashedPassword = await brcrypt.hash(password, 10);
-            const response = await pool.query(Queries.addUserQuery, [username, hashedPassword, role]);
+            const response = await pool.query(Queries.addUserQuery, [username, hashedPassword, role, email]);
 
             if(role === 1984){ //If the user is a supervisor
                 const user_id = BigInt(response.rows[0].user_id);
@@ -55,9 +55,6 @@ const getUsers = async (req, res) => {
     }
 
 }
-
-
-
 
 
 const login = async (req, res) => {
@@ -246,7 +243,7 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
 
-    const {user_id, username, password, role, team_id} = req.body;
+    const {user_id, username, password, role, team_id, email} = req.body;
 
     try {
         const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
@@ -256,7 +253,7 @@ const updateUser = async (req, res) => {
         }
         else{
             const hashedPassword = await brcrypt.hash(password, 10);
-            const response = await pool.query(Queries.updateUserQuery, [user_id, username, hashedPassword, role]);
+            const response = await pool.query(Queries.updateUserQuery, [user_id, username, hashedPassword, role, email]);
 
             try {
                 await pool.query(Queries.deleteSupervisorQuery, [user_id])

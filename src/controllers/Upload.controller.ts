@@ -32,7 +32,7 @@ const uploadPhoto = (req, res) => {
             return res.status(500).json({message: "Error uploading photo"});
         }
 
-        const photo_url = "http://localhost:5000/uploads/photos/" + uniqueFilename;
+        const photo_url = "/uploads/photos/" + uniqueFilename;
         return res.json({photo_url});
     })
 }
@@ -63,7 +63,7 @@ const uploadCV = (req, res) => {
             return res.status(500).json({message: "Error uploading CV"});
         }
 
-        const cv_url = "http://localhost:5000/uploads/cv/" + uniqueFilename;
+        const cv_url = "/uploads/cv/" + uniqueFilename;
         console.log(cv_url);
         return res.json({cv_url});
     })
@@ -98,7 +98,7 @@ const uploadDocument = async (req, res) => {
             return res.status(500).json({message: "Error uploading CV"});
         }
 
-        const document_url = "http://localhost:5000/uploads/documents/" + uniqueFilename;
+        const document_url = "/uploads/documents/" + uniqueFilename;
         const document_name = document_info.document_name;
         const intern_id = document_info.intern_id;
 
@@ -115,7 +115,7 @@ const deleteDocument = async (req, res) => {
 
     const fileName = req.params.fileName;
 
-    const url = "http://localhost:5000/uploads/documents/" + fileName;
+    const url = "/uploads/documents/" + fileName;
     const filePath = path.join(uploadDir,"documents/", fileName);
 
     try {

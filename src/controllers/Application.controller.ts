@@ -171,7 +171,8 @@ const acceptApplication = async (req, res) => {
             role: 2001,
         };
 
-        await pool.query(Queries.addUserQuery, [newUser.username, hashedPassword, newUser.role]);
+        
+        await pool.query(Queries.addUserQuery, [newUser.username, hashedPassword, newUser.role, intern.email]);
         await sendPasswordEmail(intern.email, newUser.username, randomPassword);
 
        
