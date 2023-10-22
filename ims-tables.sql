@@ -72,8 +72,10 @@ CREATE TABLE supervisors (
 CREATE TABLE users (
   user_id BIGSERIAL NOT NULL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
+  refresh_token VARCHAR(800),
+  email VARCHAR(255),
   password VARCHAR(100) NOT NULL,
-  role VARCHAR(15) NOT NULL
+  role INTEGER NOT NULL
 );
 
 
